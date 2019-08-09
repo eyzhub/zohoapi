@@ -1,0 +1,32 @@
+{
+  "name": "zohoapi",
+  "version": "1.0.0",
+  "description": "Zoho Utility functions like s3 based token management, module level operations ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "hello": "node ./postinstall.js",
+    "postinstall": "node ./postinstall.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eyzhub/zohoapi.git"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.503.0",
+    "dotenv": "^8.0.0",
+    "zcrmsdk": "0.0.15"
+  },
+  "keywords": [
+    "zoho",
+    "api",
+    "token",
+    "management"
+  ],
+  "author": "Phani Saripalli",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eyzhub/zohoapi/issues"
+  },
+  "homepage": "https://github.com/eyzhub/zohoapi#readme"
+}

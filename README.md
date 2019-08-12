@@ -1,8 +1,10 @@
 # zohoapi
+
 Gateway library for easy access to Zoho V2 api
 
 ## Purpose
-This is a utility package for handling token mechanism of Zoho crm APIv2 across several projects. The module utilizes s3  as the storage mechanism of the oauth token.
+
+This is a utility package for handling token mechanism of Zoho crm APIv2 across several projects. The module utilizes s3 as the storage mechanism of the oauth token.
 
 **Note:** This currently works with local install of the module and not global
 
@@ -17,6 +19,7 @@ This is a utility package for handling token mechanism of Zoho crm APIv2 across 
 	"refresh_token":"##########"
 }
 ```
+
 4. Create an s3 bucket or use an existing one and upload the file.
 
 The module currently supports four operations - `getRecords`, `getRecord`, `updateRecord` and `insertRecord`.
@@ -31,20 +34,32 @@ zoho =  new Zoho();
 ```
 
 1. Fetch records
+
 ```
 let params = { module: "Accounts", page: 1, per_page: 2, has_subform: true };
 let result = await zoho.getRecords(params);
+
 // body is present if there are records
-console.log(result.body)
+if (result.body) {
+	let body = JSON.parse(result.body);
+	let data = body.data;
+	console.log(data);
+} else {
+	console.log("No data");
+}
+
+
 ```
 
 2. Get a record
+
 ```
 let result =  await zoho.getRecord("Offers", "1972094000016989067");
 console.log(result.body);
 ```
 
 3. Update a record
+
 ```
 let data = [{ isan: "fooo-bar-nouse" }];
 let result = await zoho.updateRecord("Filmv1", "1972094000017015005", data);
@@ -52,6 +67,7 @@ console.log(result.body);
 ```
 
 4. Insert record
+
 ```
 let data = [{ isan: "fooo-bar-nouse", Name: "New film"}];
 let result = await zoho.insertRecord("FilmV1", data);

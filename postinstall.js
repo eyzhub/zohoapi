@@ -78,7 +78,7 @@ const createOauthProperties = async (dir) => {
 
 
 /**
- * Checks if folders/files exist(s), if not creates.
+ * Checks if credentials and config related zoho folders/files exist(s), if not creates.
  *
  */
 const main = async () => {

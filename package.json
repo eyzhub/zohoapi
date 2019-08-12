@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "hello": "node ./postinstall.js",
     "postinstall": "node ./postinstall.js"
   },
   "repository": {
@@ -23,8 +22,8 @@
     "token",
     "management"
   ],
-  "author": "Phani Saripalli",
-  "license": "ISC",
+  "author": "Phani Saripalli <saripalli@realeyz.de>",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/eyzhub/zohoapi/issues"
   },

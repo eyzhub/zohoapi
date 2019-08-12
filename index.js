@@ -39,7 +39,7 @@ class Zoho {
 	 * @param {Number} params.per_page - number of results per page, <=50
 	 * @param {Boolean} params.has_subform - if the module has subform,
 	 * 	subforms results are fetched
-	 * @returns {Object} response Zoho API Response. Note:
+	 * @returns {Object} response Zoho API Response.
 	 * @returns {String} response.body if there are results.
 	 */
 	async getRecords(params) {
@@ -98,8 +98,8 @@ class Zoho {
 	/**
 	 * Update a record of a module by its id
 	 * @param {String} module API name of the module
-	 * @param {Number} id id of the record
-	 * @param {Array} data Array of objects, e.g. [{apiname:value, apiname2:value2}]
+	 * @param {String} id of the record
+	 * @param {Array} data Array of objects, e.g. [{apiname:value, apiname2:value2, ...}]
 	 * @returns {Object} response
 	 */
 	async updateRecord(module, id, data) {
@@ -119,8 +119,8 @@ class Zoho {
 	 * Insert a record of a module by its id. The data object needs to an array
 	 * 	with an object and it should have the mandatory Name field.
 	 * @param {String} module API name of the module
-	 * @param {Number} id id of the record
-	 * @param {Array} data Array of objects, e.g. [{Name:value, apiname_ofthefield:value2}]
+	 * @param {String} id of the record
+	 * @param {Array} data Array of objects, e.g. [{Name:value, apiname_ofthefield:value2, ...}]
 	 * @returns {Object} response
 	 * @returns {String} response.status success | error
 	 */

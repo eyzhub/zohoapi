@@ -62,6 +62,8 @@ class Zoho {
 			let bodyObj = JSON.parse(response.body);
 			let data = bodyObj.data;
 
+			if(!data) return response;
+
 			let result = { body: null };
 			let records = { data: [] };
 			let zoho = new Zoho();

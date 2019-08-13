@@ -24,7 +24,17 @@ This is a utility package for handling token mechanism of Zoho crm APIv2 across 
 
 The module currently supports four operations - `getRecords`, `getRecord`, `updateRecord` and `insertRecord`.
 
-Upon installing the module, a `.env` file and `resources` folder containing two files - `configuration.properties` and `oauth_configuration.properties` are created in your project. Fill them based your AWS and Zoho credentials.
+Upon installation of the module, a `.env` file and `resources` folder containing two files - `configuration.properties` and `oauth_configuration.properties` are created in your project. Fill them based your AWS and Zoho credentials.
+
+## Install
+
+Navigate to the root of your project folder and
+
+```
+npm install https://github.com/eyzhub/zohoapi.git  --save
+```
+
+## Complete .env and files under resources
 
 ## Usage examples
 
@@ -39,15 +49,15 @@ zoho =  new Zoho();
 let params = { module: "Accounts", page: 1, per_page: 2, has_subform: true };
 let result = await zoho.getRecords(params);
 
-// body is present if there are records
-if (result.body) {
-	let body = JSON.parse(result.body);
-	let data = body.data;
-	console.log(data);
+// statusCode should be 200
+if (!result.statusCode != 200) {
+	console.log("error");
+	console.log(result)
 } else {
-	console.log("No data");
+	let body = JSON.parse(result.body);
+	let data = body.data
+	// loop data
 }
-
 
 ```
 
@@ -55,7 +65,23 @@ if (result.body) {
 
 ```
 let result =  await zoho.getRecord("Offers", "1972094000016989067");
-console.log(result.body);
+// should be 200
+console.log(result.statusCode);
+
+if (result.body) {
+	let body = JSON.parse(result.body);
+	if (body.data) {
+		// loop data
+		console.log(body.data);
+	} else {
+		console.log("error");
+		console.log(body);
+	}
+} else {
+	console.log("errror");
+	console.log("No data");
+}
+
 ```
 
 3. Update a record
@@ -63,6 +89,9 @@ console.log(result.body);
 ```
 let data = [{ isan: "fooo-bar-nouse" }];
 let result = await zoho.updateRecord("Filmv1", "1972094000017015005", data);
+
+// should be 200
+console.log(result.statusCode);
 console.log(result.body);
 ```
 

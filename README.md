@@ -50,7 +50,7 @@ let params = { module: "Accounts", page: 1, per_page: 2, has_subform: true };
 let result = await zoho.getRecords(params);
 
 // statusCode should be 200
-if (!result.statusCode != 200) {
+if (result.statusCode != 200) {
 	console.log("error");
 	console.log(result)
 } else {
@@ -103,4 +103,4 @@ let result = await zoho.insertRecord("FilmV1", data);
 console.log(result.body);
 ```
 
-**Note**: Use api names where possible.
+**Note**: Use api names for the modules and field names (Tested).

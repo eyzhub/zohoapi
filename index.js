@@ -62,7 +62,7 @@ class Zoho {
 			let bodyObj = JSON.parse(response.body);
 			let data = bodyObj.data;
 
-			if(!data) return response;
+			if (!data) return response;
 
 			let result = { body: null };
 			let records = { data: [] };
@@ -77,8 +77,8 @@ class Zoho {
 				let recordData = JSON.parse(record).data[0];
 				records.data.push(recordData);
 			}
-			result.body = JSON.stringify(records);
-			return result;
+			response.body = JSON.stringify(records);
+			return response;
 		} catch (err) {
 			console.log(err);
 			return err;
@@ -127,7 +127,7 @@ class Zoho {
 	 * @returns {String} response.status success | error
 	 */
 	async insertRecord(module, data) {
-		var input = { module: module};
+		var input = { module: module };
 		input.body = { data: data };
 
 		return this.client.API.MODULES.post(input)

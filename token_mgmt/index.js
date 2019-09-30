@@ -1,5 +1,8 @@
 var tokens = require("./s3_tokens");
 
+const expiryInterval = 3600;
+exports.expiryInterval = expiryInterval;
+
 /**
  * Save token to s3. This function is called by zoho with the token object.
  */
@@ -53,7 +56,7 @@ exports.getOAuthTokens = async (userIdentifier) => {
 
 	return new Promise(function(resolve, reject) {
 		result.accesstoken = token.access_token;
-		result.expirytime = token.expires_in + 3600;
+		result.expirytime = token.expires_in + expiryInterval;
 		result.refreshtoken = token.refresh_token;
 
 		var result_array = [];

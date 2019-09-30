@@ -49,15 +49,12 @@ zoho =  new Zoho();
 let params = { module: "Accounts", page: 1, per_page: 2, has_subform: true };
 let result = await zoho.getRecords(params);
 
-// statusCode should be 200
-if (result.statusCode != 200) {
-	console.log("error");
-	console.log(result)
-} else {
-	let body = JSON.parse(result.body);
-	let data = body.data
-	// loop data
+if (result.records) {
+	let records = result.records;
+	console.log(records.length);
+	// loop records
 }
+
 
 ```
 
@@ -65,21 +62,10 @@ if (result.statusCode != 200) {
 
 ```
 let result =  await zoho.getRecord("Offers", "1972094000016989067");
-// should be 200
-console.log(result.statusCode);
+console.log(result);
 
-if (result.body) {
-	let body = JSON.parse(result.body);
-	if (body.data) {
-		// loop data
-		console.log(body.data);
-	} else {
-		console.log("error");
-		console.log(body);
-	}
-} else {
-	console.log("errror");
-	console.log("No data");
+if (result.record) {
+	let record = result.record;
 }
 
 ```

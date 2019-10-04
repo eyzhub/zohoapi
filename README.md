@@ -89,4 +89,14 @@ let result = await zoho.insertRecord("FilmV1", data);
 console.log(result.body);
 ```
 
+5. Search records
+
+```
+let criteria = "(Product_Name:starts_with:Filmin DE)"
+let params1 = { module: "Products", page: 1, per_page: 1, criteria: criteria };
+let result1 = await zoho.searchRecords(params1);		
+console.log(result1);
+```
+
+
 **Note**: Use api names for the modules and field names (Tested).

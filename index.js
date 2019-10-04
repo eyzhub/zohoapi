@@ -2,6 +2,7 @@
 var zcrmsdk = require("zcrmsdk");
 const s3Tokens = require("./token_mgmt")
 const request = require('request')
+const fs = require('fs');
 
 
 function requestPromise(options) {
@@ -21,7 +22,9 @@ function execShellCommand(cmd) {
 	const exec = require('child_process').exec;
 	return new Promise((resolve, reject) => {
 		exec(cmd, (error, stdout, stderr) => {
-			if (error) reject(error);			
+			if (error) {
+				console.warn(error);
+			}
 			resolve(stdout ? stdout : stderr);
 		});
 	});
@@ -72,7 +75,7 @@ class Zoho {
 	 * @param {Boolean} params.has_subform - if the module has subform,
 	 * 	subforms results are fetched
 	 * @returns {Object} response Zoho API Response.
-	 * @returns {String} response.body if there are results.
+	 * @returns {List} response.records if there are records.
 	 */
 	async getRecords(params) {
 		if (!params.module) {
@@ -128,6 +131,56 @@ class Zoho {
 		} catch (err) {
 			console.log(err);
 			return { error: true, error_details: err };
+		}
+	}
+
+	/**
+	 * Search records of a module. Note: subforms are not supported.
+	 * @param {Object} params
+	 * @param {String} params.module - API name of the module
+	 * @param {String} params.criteria - field:operator:value
+	 * supported operators: equals, starts_with.
+	 * Chanining multiple criteria: (criterium1 AND/OR criterium2 ...)
+	 * @param {Number} params.page - page
+	 * @param {Number} params.per_page - number of results per page, <=50	 
+	 * @param {Number} params.sort_by - Sort by, default Modified_Time
+	 * @param {Number} params.sort_order - Order of sorting, default desc	 
+	 * @returns {Object} response Zoho API Response.
+	 * @returns {List} response.records if there are records.
+	 */
+	async searchRecords(params) {
+		if (!params.module) {
+			return { error: true };
+		}
+
+		let client = await this.getClient();
+
+		let page = params.page ? params.page : 1;
+		let per_page = params.per_page ? params.per_page : 50;
+
+		let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
+		let sort_order = params.sort_order ? params.sort_order : "desc";
+
+		var input = { module: params.module };
+		input.params = {
+			page: page,
+			per_page: per_page,
+			sort_by: sort_by,
+			sort_order: sort_order,
+			criteria: params.criteria
+		};
+
+		let response = null;
+
+		try {
+			response = await client.API.MODULES.search(input);
+			if (response.statusCode != 200) {
+				return { records: [], statusCode: response.statusCode };
+			}
+			let jsonResponse = JSON.parse(response.body);
+			return { records: jsonResponse.data, statusCode: response.statusCode, info: jsonResponse.info };
+		} catch (error) {
+			return { error: true, error_details: error, statusCode: 500 };
 		}
 	}
 
@@ -310,10 +363,11 @@ class Zoho {
 		console.log(accessToken);
 
 		let url = `https://www.zohoapis.com/crm/bulk/v2/read/${jobId}/result`;
+
 		let cmd = `curl -o ${destination} "${url}" -X GET -H "Authorization: Zoho-oauthtoken ${accessToken}"`;
-		// console.log(cmd);
-		
-		try {			
+
+		try {
+			// console.log(cmd);
 			await execShellCommand(cmd);
 			await execShellCommand(`unzip ${destination}`);
 			console.log(`extracted file - ${jobId}.csv`);
@@ -324,9 +378,10 @@ class Zoho {
 		}
 	}
 
-	async _checkStatus(jobId, destination) {
+	async _checkStatus(jobId, destination) {		
 		var intervalId = null;
 		let zoho = new Zoho();
+
 		var state = async function () {
 			let resp = await zoho.bulkRead(jobId);
 			let jState = resp.data.state;
@@ -374,7 +429,7 @@ class Zoho {
 			return { success: false };
 		}
 
-		console.log(`started with job id ${jobId}`);
+		console.log(`started with jobId ${jobId}`);
 
 		try {
 			await this._checkStatus(jobId, destination);

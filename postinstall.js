@@ -26,14 +26,12 @@ const createEnv = async (dir) => {
 		envContent += `S3_BUCKET=${process.env.S3_BUCKET}\n`
 		envContent += `S3_KEY=zoho_token.json`
 
-		fs.writeFileSync(dir, envContent)
-		checkPathExists(dir)
-		// , function(err) {
-		// 	if (err) {
-		// 		return console.log(err);
-		// 	}
-		// 	console.log(`.env created with ${envContent}`, checkPathExists(configurationPropertiesPath));
-		// });
+		fs.writeFileSync(dir, envContent, (err) => {
+			if (err) {
+				return console.log(err);
+			}
+			console.log(`.env created with ${envContent}`, dir, checkPathExists(dir));
+		});
 	}
 };
 
@@ -47,14 +45,12 @@ const createConfgigurationProperties = async (rootDir, dir) => {
 		configurationPropertiesContent += `api.user_identifier=${process.env.api_user_identifier}\n`
 		configurationPropertiesContent += `api.tokenmanagement=${apiTokenMgmtPath}`
 
-		fs.writeFileSync(configurationPropertiesPath, configurationPropertiesContent)
-		checkPathExists(configurationPropertiesPath)
-		// 	, function(err) {
-		// 	if (err) {
-		// 		console.log(`Failed created ${configurationPropertiesPath}`);
-		// 	}
-		// 	console.log(`Created ${configurationPropertiesContent}`, configurationPropertiesPath, checkPathExists(configurationPropertiesPath));
-		// });
+		fs.writeFileSync(configurationPropertiesPath, configurationPropertiesContent, (err) => {
+			if (err) {
+				console.log(`Failed created ${configurationPropertiesPath}`);
+			}
+			console.log(`Created ${configurationPropertiesContent}`, configurationPropertiesPath, checkPathExists(configurationPropertiesPath));
+		});
 	}
 };
 
@@ -70,13 +66,13 @@ const createOauthProperties = async (dir) => {
 
 		fs.writeFileSync(
 			oauthConfigurationPropertiesPath,
-			oauthConfigurationPropertiesContent
-			// function(err) {
-			// 	if (err) {
-			// 		console.log(`Failed created ${oauthConfigurationPropertiesPath}`);
-			// 	}
-			// 	console.log(`Created ${oauthConfigurationPropertiesContent}`, oauthConfigurationPropertiesPath, checkPathExists(oauthConfigurationPropertiesPath));
-			// }
+			oauthConfigurationPropertiesContent,
+			(err) => {
+				if (err) {
+					console.log(`Failed created ${oauthConfigurationPropertiesPath}`);
+				}
+				console.log(`Created ${oauthConfigurationPropertiesContent}`, oauthConfigurationPropertiesPath, checkPathExists(oauthConfigurationPropertiesPath));
+			}
 		);
 		checkPathExists(oauthConfigurationPropertiesPath)
 	}

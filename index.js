@@ -3,7 +3,7 @@ var zcrmsdk = require("zcrmsdk");
 const s3Tokens = require("./token_mgmt")
 const request = require('request')
 const fs = require('fs');
-
+let module_options
 
 function requestPromise(options) {
 	return new Promise(function (resolve, reject) {
@@ -36,12 +36,14 @@ class Zoho {
 	 * Creates a client to communicate with zoho API.
 	 * @constructor
 	 */
-	constructor() { }
+	constructor(params) {
+		if (params) module_options = params
+	}
 
 	async init() { }
 
 	async getClient(generate = false) {
-		console.log('-> ZohoAPI getClient')
+		if (module_options.debug) console.log('ZohoAPI getClient')
 		let tokenObj = await s3Tokens.getOAuthTokens();
 		let expirytime = tokenObj[0].expirytime;
 		let refreshToken = tokenObj[0].refreshtoken;
@@ -77,7 +79,7 @@ class Zoho {
 	 * @returns {List} response.records if there are records.
 	 */
 	async getRecords(params) {
-		console.log('-> ZohoAPI getRecords')
+		if (module_options.debug) console.log('ZohoAPI getRecords', params)
 		if (!params.module) {
 			return { error: true };
 		}
@@ -148,6 +150,7 @@ class Zoho {
 	 * @returns {List} response.records if there are records.
 	 */
 	async searchRecords(params) {
+		if (module_options.debug) console.log('ZohoAPI searchRecords', params)
 		if (!params.module) {
 			return { error: true };
 		}
@@ -197,6 +200,7 @@ class Zoho {
 	 * @returns {Integer} response.count if there are results.
 	 */
 	async getRecordsModifiedAfter(params) {
+		if (module_options.debug) console.log('ZohoAPI getRecordsModifiedAfter', params)
 		if (!params.module) {
 			return { error: true };
 		}
@@ -257,7 +261,7 @@ class Zoho {
 	 * @returns {Integer} response.count if there are results.
 	 */
 	async getAllRecords(params) {
-		console.log('-> ZohoAPI getAllRecords', params)
+		if (module_options.debug) console.log('ZohoAPI getAllRecords', params)
 		if (!params.module) {
 			return { error: true };
 		}
@@ -290,6 +294,7 @@ class Zoho {
 
 
 	async bulkRead(id) {
+		if (module_options.debug) console.log('ZohoAPI bulkRead', id)
 		await this.getClient();
 
 		let url = `https://www.zohoapis.com/crm/bulk/v2/read/${id}`;
@@ -318,6 +323,7 @@ class Zoho {
 	}
 
 	async bulkReadCreate(module) {
+		if (module_options.debug) console.log('ZohoAPI bulkReadCreate', module)
 		if (!module) {
 			return { error: true };
 		}
@@ -353,6 +359,7 @@ class Zoho {
 	}
 
 	async bulkReadDownload(jobId, destination) {
+		if (module_options.debug) console.log('ZohoAPI bulkReadDownload', module)
 		if (!destination.endsWith(".zip")) return { success: false };
 
 		await this.getClient();
@@ -408,6 +415,7 @@ class Zoho {
 	}
 
 	async downloadModule(module, destination) {
+		if (module_options.debug) console.log('ZohoAPI downloadModule', module, destination)
 		let bulkReadCreateResult = null;
 		let bulkReadResult = null;
 		let jobId = null;
@@ -446,6 +454,7 @@ class Zoho {
 	 * @returns {Object} response.record if there is a record with the id
 	 */
 	async getRecord(module, id) {
+		if (module_options.debug) console.log('ZohoAPI getRecord', module, id)
 		var input = { module: module, id: id };
 		let client = await this.getClient();
 		try {
@@ -466,6 +475,7 @@ class Zoho {
 	 * @returns {Object} response
 	 */
 	async updateRecord(module, id, data) {
+		if (module_options.debug) console.log('ZohoAPI updateRecord', module, id)
 		var input = { module: module, id: id };
 		input.body = { data: data };
 
@@ -491,6 +501,7 @@ class Zoho {
 	 * @returns {String} response.status success | error
 	 */
 	async insertRecord(module, data) {
+		if (module_options.debug) console.log('ZohoAPI insertRecord', module)
 		var input = { module: module };
 		input.body = { data: data };
 

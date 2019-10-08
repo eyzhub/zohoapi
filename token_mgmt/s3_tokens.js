@@ -14,6 +14,7 @@ const s3 = new AWS.S3({
 
 const getTokens = async () => {
 	var params = { Bucket: process.env.S3_BUCKET, Key: process.env.S3_KEY };
+	console.log('-> getTokens', params);
 	return s3.getObject(params).promise();
 };
 
@@ -23,6 +24,7 @@ const setTokens = async (obj) => {
 		Key: process.env.S3_KEY,
 		Body: JSON.stringify(obj)
 	};
+	console.log('-> setTokens', params);
 	return s3.upload(params).promise();
 };
 

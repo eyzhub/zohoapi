@@ -41,7 +41,7 @@ class Zoho {
 	async init() { }
 
 	async getClient(generate = false) {
-		// console.log('-> ZohoAPI getClient')
+		console.log('-> ZohoAPI getClient')
 		let tokenObj = await s3Tokens.getOAuthTokens();
 		let expirytime = tokenObj[0].expirytime;
 		let refreshToken = tokenObj[0].refreshtoken;
@@ -56,7 +56,10 @@ class Zoho {
 
 		this.client = zcrmsdk;
 
+		console.log('-> ZohoAPI getClient', this.client, ts, expirytime, toInit);
+
 		if (toInit && generate) {
+			console.log('-> ZohoAPI getClient generating')
 			await zcrmsdk.generateAuthTokenfromRefreshToken(null, refreshToken);
 		}
 
@@ -77,7 +80,7 @@ class Zoho {
 	 * @returns {List} response.records if there are records.
 	 */
 	async getRecords(params) {
-		// console.log('-> ZohoAPI getRecords', params)
+		console.log('-> ZohoAPI getRecords')
 		if (!params.module) {
 			return { error: true };
 		}
@@ -96,7 +99,7 @@ class Zoho {
 
 		if (!params.has_subform) {
 			try {
-				// console.log('-> getRecords client.API.MODULES.get(input)', input)
+				console.log('-> getRecords client.API.MODULES.get(input)', input)
 				response = await client.API.MODULES.get(input);
 				if (response.statusCode != 200) {
 					return { records: [], statusCode: response.statusCode, info: jsonResponse.info };
@@ -110,6 +113,7 @@ class Zoho {
 
 		try {
 			let response = await client.API.MODULES.get(input);
+			console.log('-> getRecords client.API.MODULES.get(input)', input, ' response:', response)
 			if (!response.body)
 				return { records: [], statusCode: 204 };
 
@@ -227,6 +231,7 @@ class Zoho {
 					let data = response.records;
 
 					for (let item of data) {
+						// console.log(item.Modified_Time, modifiedAfter, item.Modified_Time >= modifiedAfter);						
 						if (item.Modified_Time >= modifiedAfter) resultData.push(item);
 						else {
 							hasMore = false;
@@ -257,7 +262,7 @@ class Zoho {
 	 * @returns {Integer} response.count if there are results.
 	 */
 	async getAllRecords(params) {
-		// console.log('-> ZohoAPI getAllRecords', params)
+		console.log('-> ZohoAPI getAllRecords', params)
 		if (!params.module) {
 			return { error: true };
 		}
@@ -271,11 +276,13 @@ class Zoho {
 		let resultData = [];
 
 		while (hasMore) {
+			console.log('-> ZohoAPI getAllRecords hasMore', page)
 			try {
 				let tempParams = { page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order };
 				Object.assign(params, tempParams);
 
 				let response = await this.getRecords(params);
+				console.log('-> ZohoAPI getAllRecords response', params, response)
 				if (!response.records && response.records.length > 0) hasMore = false;
 				else {
 					resultData.push(...response.records)
@@ -285,7 +292,7 @@ class Zoho {
 				hasMore = false;
 			}
 		}
-		// console.log('-> ZohoAPI getAllRecords resultData', resultData)
+		console.log('-> ZohoAPI getAllRecords resultData', resultData)
 		return { records: resultData, count: resultData.length, statusCode: 200 };
 	}
 
@@ -360,7 +367,7 @@ class Zoho {
 
 		let tokenObj = await s3Tokens.getOAuthTokens();
 		let accessToken = tokenObj[0].accesstoken;
-		// console.log(accessToken);
+		console.log(accessToken);
 
 		let url = `https://www.zohoapis.com/crm/bulk/v2/read/${jobId}/result`;
 

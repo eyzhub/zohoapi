@@ -86,8 +86,6 @@ class Zoho {
 		}
 		let client = await this.getClient();
 
-		console.log('-> ZohoAPI getRecords client', Object.keys(client))
-
 		let page = params.page ? params.page : 1;
 		let per_page = params.per_page ? params.per_page : 50;
 
@@ -102,7 +100,7 @@ class Zoho {
 		if (!params.has_subform) {
 			try {
 				response = await client.API.MODULES.get(input);
-				console.log('-> getRecords', input, response)
+				console.log('-> getRecords client.API.MODULES.get(input)', input, ' response:', response)
 				if (response.statusCode != 200) {
 					return { records: [], statusCode: response.statusCode, info: jsonResponse.info };
 				}
@@ -115,7 +113,7 @@ class Zoho {
 
 		try {
 			let response = await client.API.MODULES.get(input);
-			console.log('-> ZohoAPI getRecords response', input, response)
+			console.log('-> getRecords client.API.MODULES.get(input)', input, ' response:', response)
 			if (!response.body)
 				return { records: [], statusCode: 204 };
 

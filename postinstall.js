@@ -27,6 +27,7 @@ const createEnv = async (dir) => {
 		envContent += `S3_KEY=zoho_token.json`
 
 		fs.writeFileSync(dir, envContent)
+		checkPathExists(dir)
 		// , function(err) {
 		// 	if (err) {
 		// 		return console.log(err);
@@ -46,6 +47,7 @@ const createConfgigurationProperties = async (rootDir, dir) => {
 		configurationPropertiesContent += `api.tokenmanagement=${apiTokenMgmtPath}`
 
 		fs.writeFileSync(configurationPropertiesPath, configurationPropertiesContent)
+		checkPathExists(configurationPropertiesPath)
 		// 	, function(err) {
 		// 	if (err) {
 		// 		console.log(`Failed created ${configurationPropertiesPath}`);
@@ -75,6 +77,7 @@ const createOauthProperties = async (dir) => {
 			// 	console.log(`Created ${oauthConfigurationPropertiesContent}`, oauthConfigurationPropertiesPath, checkPathExists(oauthConfigurationPropertiesPath));
 			// }
 		);
+		checkPathExists(oauthConfigurationPropertiesPath)
 	}
 };
 

@@ -80,7 +80,7 @@ class Zoho {
 	 * @returns {List} response.records if there are records.
 	 */
 	async getRecords(params) {
-		console.log('-> ZohoAPI getRecords', Object.keys(process.env))
+		console.log('-> ZohoAPI getRecords', params)
 		if (!params.module) {
 			return { error: true };
 		}

@@ -30,7 +30,7 @@ const createEnv = async (dir) => {
 			if (err) {
 				return console.log(err);
 			}
-			console.log(`.env created with ${envContent}`);
+			console.log(`.env created with ${envContent}`, dir);
 		});
 	}
 };
@@ -48,7 +48,7 @@ const createConfgigurationProperties = async (rootDir, dir) => {
 			if (err) {
 				console.log(`Failed created ${configurationPropertiesPath}`);
 			}
-			console.log(`Created ${configurationPropertiesContent}`);
+			console.log(`Created ${configurationPropertiesContent}`, rootDir, dir);
 		});
 	}
 };
@@ -70,7 +70,7 @@ const createOauthProperties = async (dir) => {
 				if (err) {
 					console.log(`Failed created ${oauthConfigurationPropertiesPath}`);
 				}
-				console.log(`Created ${oauthConfigurationPropertiesContent}`);
+				console.log(`Created ${oauthConfigurationPropertiesContent}`, dir);
 			}
 		);
 	}

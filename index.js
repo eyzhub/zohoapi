@@ -51,11 +51,12 @@ class Zoho {
 
 		let toInit = ts >= (expirytime - 1000);
 
-		console.log('-> ZohoAPI getClient', this.client, ts, expirytime, toInit);
 
 		if (toInit) await zcrmsdk.initialize();
 
 		this.client = zcrmsdk;
+
+		console.log('-> ZohoAPI getClient', this.client, ts, expirytime, toInit);
 
 		if (toInit && generate) {
 			console.log('-> ZohoAPI getClient generating')

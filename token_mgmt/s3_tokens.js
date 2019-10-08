@@ -2,7 +2,6 @@ var AWS = require("aws-sdk");
 const dotenv = require("dotenv");
 dotenv.config();
 
-
 let credentials = {
 	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
 	secretAccessKey: process.env.SECRET_ACCESS_KEY_ID

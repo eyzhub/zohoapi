@@ -74,7 +74,6 @@ const createOauthProperties = async (dir) => {
 				console.log(`Created ${oauthConfigurationPropertiesContent}`, oauthConfigurationPropertiesPath, checkPathExists(oauthConfigurationPropertiesPath));
 			}
 		);
-		checkPathExists(oauthConfigurationPropertiesPath)
 	}
 };
 

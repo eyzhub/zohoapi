@@ -50,6 +50,7 @@ const createConfgigurationProperties = async (rootDir, dir) => {
 			}
 			console.log(`Created ${configurationPropertiesContent}`, rootDir, dir);
 		});
+		console.log('-> Check File exists', configurationPropertiesPath, checkPathExists(configurationPropertiesPath))
 	}
 };
 

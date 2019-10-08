@@ -3,7 +3,7 @@ var zcrmsdk = require("zcrmsdk");
 const s3Tokens = require("./token_mgmt")
 const request = require('request')
 const fs = require('fs');
-let module_options
+let module_options = {}
 
 function requestPromise(options) {
 	return new Promise(function (resolve, reject) {

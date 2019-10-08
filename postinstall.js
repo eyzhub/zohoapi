@@ -20,11 +20,11 @@ const createResourcesDir = async (dir) => {
 
 const createEnv = async (dir) => {
 	if (!checkPathExists(dir)) {
-		let envContent = "NODE_ENV=development\n";
-		envContent += "AWS_ACCESS_KEY_ID=\n";
-		envContent += "SECRET_ACCESS_KEY_ID=\n";
-		envContent += "S3_BUCKET=\n";
-		envContent += "S3_KEY=zoho_token.json";
+		let envContent = `NODE_ENV=development\n
+			AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID}\n
+			SECRET_ACCESS_KEY_ID=${process.env.SECRET_ACCESS_KEY_ID}\n
+			S3_BUCKET=${process.env.S3_BUCKET}\n
+			S3_KEY=zoho_token.json`
 
 		fs.writeFile(dir, envContent, function(err) {
 			if (err) {
@@ -38,11 +38,11 @@ const createEnv = async (dir) => {
 const createConfgigurationProperties = async (rootDir, dir) => {
 	let configurationPropertiesPath = path.join(dir, "configuration.properties");
 	if (!checkPathExists(configurationPropertiesPath)) {
-		let configurationPropertiesContent = "[crm]\n";
-		configurationPropertiesContent += "api.url=www.zohoapis.com\n";
-		configurationPropertiesContent += "api.user_identifier=\n";
 		let apiTokenMgmtPath = path.join(rootDir, "node_modules", "zohoapi", "token_mgmt", "index.js");
-		configurationPropertiesContent += `api.tokenmanagement=${apiTokenMgmtPath}`;
+		let configurationPropertiesContent = `[crm]\n
+			api.url=www.zohoapis.com\n
+			api.user_identifier=${process.env.api.user_identifier}\n
+			api.tokenmanagement=${apiTokenMgmtPath}`
 
 		fs.writeFile(configurationPropertiesPath, configurationPropertiesContent, function(err) {
 			if (err) {
@@ -57,11 +57,11 @@ const createOauthProperties = async (dir) => {
 	let oauthConfigurationPropertiesPath = path.join(dir, "oauth_configuration.properties");
 
 	if (!checkPathExists(oauthConfigurationPropertiesPath)) {
-		let oauthConfigurationPropertiesContent = "[zoho]\n";
-		oauthConfigurationPropertiesContent += "crm.iamurl=accounts.zoho.com\n";
-		oauthConfigurationPropertiesContent += "crm.clientid=\n";
-		oauthConfigurationPropertiesContent += "crm.clientsecret=\n";
-		oauthConfigurationPropertiesContent += "crm.redirecturl=\n";
+		let oauthConfigurationPropertiesContent = `[zoho]\n
+			crm.iamurl=accounts.zoho.com\n
+			crm.clientid=${process.env.crm.clientid}\n
+			crm.clientsecret=${process.env.crm.clientsecret}\n
+			crm.redirecturl=${process.env.crm.redirecturl}\n`
 
 		fs.writeFile(
 			oauthConfigurationPropertiesPath,

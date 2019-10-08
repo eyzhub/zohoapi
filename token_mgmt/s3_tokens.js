@@ -3,7 +3,6 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 
-console.log('-> S3 Tokens', process.env.AWS_ACCESS_KEY_ID)
 let credentials = {
 	accessKeyId: process.env.AWS_ACCESS_KEY_ID,
 	secretAccessKey: process.env.SECRET_ACCESS_KEY_ID
@@ -15,6 +14,7 @@ const s3 = new AWS.S3({
 
 const getTokens = async () => {
 	var params = { Bucket: process.env.S3_BUCKET, Key: process.env.S3_KEY };
+	console.log('-> getTokens', params);
 	return s3.getObject(params).promise();
 };
 
@@ -24,6 +24,7 @@ const setTokens = async (obj) => {
 		Key: process.env.S3_KEY,
 		Body: JSON.stringify(obj)
 	};
+	console.log('-> setTokens', params);
 	return s3.upload(params).promise();
 };
 

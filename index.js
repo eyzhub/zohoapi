@@ -79,6 +79,7 @@ class Zoho {
 	 * @returns {List} response.records if there are records.
 	 */
 	async getRecords(params) {
+		console.log('-> ZohoAPI getRecords')
 		if (!params.module) {
 			return { error: true };
 		}
@@ -109,8 +110,9 @@ class Zoho {
 		}
 
 		try {
+			console.log('-> ZohoAPI getRecords client', client)
 			let response = await client.API.MODULES.get(input);
-
+			console.log('-> ZohoAPI getRecords response', response)
 			if (!response.body)
 				return { records: [], statusCode: 204 };
 
@@ -259,7 +261,7 @@ class Zoho {
 	 * @returns {Integer} response.count if there are results.
 	 */
 	async getAllRecords(params) {
-		console.log('ZohoAPI getAllRecords', params)
+		console.log('-> ZohoAPI getAllRecords', params)
 		if (!params.module) {
 			return { error: true };
 		}
@@ -273,7 +275,7 @@ class Zoho {
 		let resultData = [];
 
 		while (hasMore) {
-			console.log('ZohoAPI getAllRecords hasMore', page)
+			console.log('-> ZohoAPI getAllRecords hasMore', page)
 			try {
 				let tempParams = { page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order };
 				Object.assign(params, tempParams);
@@ -288,7 +290,7 @@ class Zoho {
 				hasMore = false;
 			}
 		}
-		console.log('ZohoAPI getAllRecords resultData', resultData)
+		console.log('-> ZohoAPI getAllRecords resultData', resultData)
 		return { records: resultData, count: resultData.length, statusCode: 200 };
 	}
 

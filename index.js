@@ -41,6 +41,7 @@ class Zoho {
 	async init() { }
 
 	async getClient(generate = false) {
+		console.log('-> ZohoAPI getClient')
 		let tokenObj = await s3Tokens.getOAuthTokens();
 		let expirytime = tokenObj[0].expirytime;
 		let refreshToken = tokenObj[0].refreshtoken;
@@ -50,14 +51,14 @@ class Zoho {
 
 		let toInit = ts >= (expirytime - 1000);
 
-		// console.log(ts, expirytime, toInit);
+		console.log('-> ZohoAPI getClient',ts, expirytime, toInit);
 
 		if (toInit) await zcrmsdk.initialize();
 
 		this.client = zcrmsdk;
 
 		if (toInit && generate) {
-			// console.log("generating");
+			console.log('-> ZohoAPI getClient generating')
 			await zcrmsdk.generateAuthTokenfromRefreshToken(null, refreshToken);
 		}
 
@@ -258,6 +259,7 @@ class Zoho {
 	 * @returns {Integer} response.count if there are results.
 	 */
 	async getAllRecords(params) {
+		console.log('ZohoAPI getAllRecords', params)
 		if (!params.module) {
 			return { error: true };
 		}
@@ -271,6 +273,7 @@ class Zoho {
 		let resultData = [];
 
 		while (hasMore) {
+			console.log('ZohoAPI getAllRecords hasMore', page)
 			try {
 				let tempParams = { page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order };
 				Object.assign(params, tempParams);
@@ -285,7 +288,7 @@ class Zoho {
 				hasMore = false;
 			}
 		}
-
+		console.log('ZohoAPI getAllRecords resultData', resultData)
 		return { records: resultData, count: resultData.length, statusCode: 200 };
 	}
 

@@ -51,7 +51,7 @@ class Zoho {
 
 		let toInit = ts >= (expirytime - 1000);
 
-		console.log('-> ZohoAPI getClient',ts, expirytime, toInit);
+		console.log('-> ZohoAPI getClient', this.client, ts, expirytime, toInit);
 
 		if (toInit) await zcrmsdk.initialize();
 
@@ -85,6 +85,8 @@ class Zoho {
 		}
 		let client = await this.getClient();
 
+		console.log('-> ZohoAPI getRecords client', client)
+
 		let page = params.page ? params.page : 1;
 		let per_page = params.per_page ? params.per_page : 50;
 
@@ -110,7 +112,6 @@ class Zoho {
 		}
 
 		try {
-			console.log('-> ZohoAPI getRecords client', client)
 			let response = await client.API.MODULES.get(input);
 			console.log('-> ZohoAPI getRecords response', response)
 			if (!response.body)

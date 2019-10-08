@@ -26,17 +26,18 @@ const createEnv = async (dir) => {
 		envContent += `S3_BUCKET=${process.env.S3_BUCKET}\n`
 		envContent += `S3_KEY=zoho_token.json`
 
-		fs.writeFile(dir, envContent, function(err) {
-			if (err) {
-				return console.log(err);
-			}
-			console.log(`.env created with ${envContent}`, dir);
-		});
+		fs.writeFileSync(dir, envContent)
+		// , function(err) {
+		// 	if (err) {
+		// 		return console.log(err);
+		// 	}
+		// 	console.log(`.env created with ${envContent}`, checkPathExists(configurationPropertiesPath));
+		// });
 	}
 };
 
 const createConfgigurationProperties = async (rootDir, dir) => {
-	let configurationPropertiesPath = path.join(dir, "configuration.properties");
+	let configurationPropertiesPath = path.resolve(path.join(dir, "configuration.properties"));
 	if (!checkPathExists(configurationPropertiesPath)) {
 		let apiTokenMgmtPath = path.resolve(path.join("token_mgmt", "index.js"));
 		let configurationPropertiesContent = '[crm]\n'
@@ -44,13 +45,13 @@ const createConfgigurationProperties = async (rootDir, dir) => {
 		configurationPropertiesContent += `api.user_identifier=${process.env.api_user_identifier}\n`
 		configurationPropertiesContent += `api.tokenmanagement=${apiTokenMgmtPath}`
 
-		fs.writeFile(configurationPropertiesPath, configurationPropertiesContent, function(err) {
-			if (err) {
-				console.log(`Failed created ${configurationPropertiesPath}`);
-			}
-			console.log(`Created ${configurationPropertiesContent}`, rootDir, dir);
-		});
-		console.log('-> Check File exists', configurationPropertiesPath, checkPathExists(configurationPropertiesPath))
+		fs.writeFileSync(configurationPropertiesPath, configurationPropertiesContent)
+		// 	, function(err) {
+		// 	if (err) {
+		// 		console.log(`Failed created ${configurationPropertiesPath}`);
+		// 	}
+		// 	console.log(`Created ${configurationPropertiesContent}`, configurationPropertiesPath, checkPathExists(configurationPropertiesPath));
+		// });
 	}
 };
 
@@ -64,15 +65,15 @@ const createOauthProperties = async (dir) => {
 		oauthConfigurationPropertiesContent += `crm.clientsecret=${process.env.crm_clientsecret}\n`
 		oauthConfigurationPropertiesContent += `crm.redirecturl=${process.env.crm_redirecturl}\n`
 
-		fs.writeFile(
+		fs.writeFileSync(
 			oauthConfigurationPropertiesPath,
-			oauthConfigurationPropertiesContent,
-			function(err) {
-				if (err) {
-					console.log(`Failed created ${oauthConfigurationPropertiesPath}`);
-				}
-				console.log(`Created ${oauthConfigurationPropertiesContent}`, dir);
-			}
+			oauthConfigurationPropertiesContent
+			// function(err) {
+			// 	if (err) {
+			// 		console.log(`Failed created ${oauthConfigurationPropertiesPath}`);
+			// 	}
+			// 	console.log(`Created ${oauthConfigurationPropertiesContent}`, oauthConfigurationPropertiesPath, checkPathExists(oauthConfigurationPropertiesPath));
+			// }
 		);
 	}
 };

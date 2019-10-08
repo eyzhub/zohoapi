@@ -43,7 +43,6 @@ class Zoho {
 	async init() { }
 
 	async getClient(generate = false) {
-		if (module_options.debug) console.log('ZohoAPI getClient')
 		let tokenObj = await s3Tokens.getOAuthTokens();
 		let expirytime = tokenObj[0].expirytime;
 		let refreshToken = tokenObj[0].refreshtoken;

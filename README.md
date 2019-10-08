@@ -40,7 +40,7 @@ npm install https://github.com/eyzhub/zohoapi.git  --save
 
 ```
 Zoho = require("zohoapi");
-zoho =  new Zoho();
+zoho =  new Zoho(); // optional enable debug messages | zoho =  new Zoho( { debug:true } );
 ```
 
 1. Fetch records

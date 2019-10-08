@@ -20,35 +20,36 @@ const createResourcesDir = async (dir) => {
 
 const createEnv = async (dir) => {
 	if (!checkPathExists(dir)) {
-		let envContent = "NODE_ENV=development\n";
-		envContent += "AWS_ACCESS_KEY_ID=\n";
-		envContent += "SECRET_ACCESS_KEY_ID=\n";
-		envContent += "S3_BUCKET=\n";
-		envContent += "S3_KEY=zoho_token.json";
+		let envContent = 'NODE_ENV=development\n'
+		envContent += `AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID}\n`
+		envContent += `SECRET_ACCESS_KEY_ID=${process.env.SECRET_ACCESS_KEY_ID}\n`
+		envContent += `S3_BUCKET=${process.env.S3_BUCKET}\n`
+		envContent += `S3_KEY=zoho_token.json`
 
-		fs.writeFile(dir, envContent, function(err) {
+		fs.writeFile(dir, envContent, (err) => {
 			if (err) {
 				return console.log(err);
 			}
-			console.log(`.env created with ${envContent}`);
+			console.log(`.env created with ${envContent}`, dir, checkPathExists(dir));
 		});
 	}
 };
 
 const createConfgigurationProperties = async (rootDir, dir) => {
-	let configurationPropertiesPath = path.join(dir, "configuration.properties");
+	let configurationPropertiesPath = path.resolve(path.join(dir, "configuration.properties"));
 	if (!checkPathExists(configurationPropertiesPath)) {
-		let configurationPropertiesContent = "[crm]\n";
-		configurationPropertiesContent += "api.url=www.zohoapis.com\n";
-		configurationPropertiesContent += "api.user_identifier=\n";
-		let apiTokenMgmtPath = path.join(rootDir, "node_modules", "zohoapi", "token_mgmt", "index.js");
-		configurationPropertiesContent += `api.tokenmanagement=${apiTokenMgmtPath}`;
+		let apiTokenMgmtPath = path.resolve(path.join("token_mgmt", "index.js"));
+		if (process.env.DYNO) apiTokenMgmtPath = '/'+path.join('app','node_modules','zohoapi',"token_mgmt", "index.js");
+		let configurationPropertiesContent = '[crm]\n'
+		configurationPropertiesContent += 'api.url=www.zohoapis.com\n'
+		configurationPropertiesContent += `api.user_identifier=${process.env.api_user_identifier}\n`
+		configurationPropertiesContent += `api.tokenmanagement=${apiTokenMgmtPath}`
 
-		fs.writeFile(configurationPropertiesPath, configurationPropertiesContent, function(err) {
+		fs.writeFile(configurationPropertiesPath, configurationPropertiesContent, (err) => {
 			if (err) {
 				console.log(`Failed created ${configurationPropertiesPath}`);
 			}
-			console.log(`Created ${configurationPropertiesContent}`);
+			console.log(`Created ${configurationPropertiesContent}`, configurationPropertiesPath, checkPathExists(configurationPropertiesPath));
 		});
 	}
 };
@@ -57,20 +58,20 @@ const createOauthProperties = async (dir) => {
 	let oauthConfigurationPropertiesPath = path.join(dir, "oauth_configuration.properties");
 
 	if (!checkPathExists(oauthConfigurationPropertiesPath)) {
-		let oauthConfigurationPropertiesContent = "[zoho]\n";
-		oauthConfigurationPropertiesContent += "crm.iamurl=accounts.zoho.com\n";
-		oauthConfigurationPropertiesContent += "crm.clientid=\n";
-		oauthConfigurationPropertiesContent += "crm.clientsecret=\n";
-		oauthConfigurationPropertiesContent += "crm.redirecturl=\n";
+		let oauthConfigurationPropertiesContent = '[zoho]\n'
+		oauthConfigurationPropertiesContent += 'crm.iamurl=accounts.zoho.com\n'
+		oauthConfigurationPropertiesContent += `crm.clientid=${process.env.crm_clientid}\n`
+		oauthConfigurationPropertiesContent += `crm.clientsecret=${process.env.crm_clientsecret}\n`
+		oauthConfigurationPropertiesContent += `crm.redirecturl=${process.env.crm_redirecturl}\n`
 
 		fs.writeFile(
 			oauthConfigurationPropertiesPath,
 			oauthConfigurationPropertiesContent,
-			function(err) {
+			(err) => {
 				if (err) {
 					console.log(`Failed created ${oauthConfigurationPropertiesPath}`);
 				}
-				console.log(`Created ${oauthConfigurationPropertiesContent}`);
+				console.log(`Created ${oauthConfigurationPropertiesContent}`, oauthConfigurationPropertiesPath, checkPathExists(oauthConfigurationPropertiesPath));
 			}
 		);
 	}

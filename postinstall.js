@@ -30,7 +30,7 @@ const createEnv = async (dir) => {
 			if (err) {
 				return console.log(err);
 			}
-			console.log(`.env created with ${envContent}`, checkPathExists(configurationPropertiesPath));
+			console.log(`.env created with ${envContent}`, checkPathExists(dir));
 		});
 	}
 };
@@ -38,7 +38,7 @@ const createEnv = async (dir) => {
 const createConfgigurationProperties = async (rootDir, dir) => {
 	let configurationPropertiesPath = path.resolve(path.join(dir, "configuration.properties"));
 	if (!checkPathExists(configurationPropertiesPath)) {
-		let apiTokenMgmtPath = path.resolve(path.join("token_mgmt", "index.js"));
+		let apiTokenMgmtPath = path.join('app', 'node_modules', 'zohoapi', 'token_mgmt', 'index.js');
 		let configurationPropertiesContent = '[crm]\n'
 		configurationPropertiesContent += 'api.url=www.zohoapis.com\n'
 		configurationPropertiesContent += `api.user_identifier=${process.env.api_user_identifier}\n`

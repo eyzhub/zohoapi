@@ -41,7 +41,7 @@ const createConfgigurationProperties = async (rootDir, dir) => {
 		let apiTokenMgmtPath = path.join(rootDir, "node_modules", "zohoapi", "token_mgmt", "index.js");
 		let configurationPropertiesContent = `[crm]\n
 			api.url=www.zohoapis.com\n
-			api.user_identifier=${process.env.api.user_identifier}\n
+			api.user_identifier=${process.env.api_user_identifier}\n
 			api.tokenmanagement=${apiTokenMgmtPath}`
 
 		fs.writeFile(configurationPropertiesPath, configurationPropertiesContent, function(err) {
@@ -59,9 +59,9 @@ const createOauthProperties = async (dir) => {
 	if (!checkPathExists(oauthConfigurationPropertiesPath)) {
 		let oauthConfigurationPropertiesContent = `[zoho]\n
 			crm.iamurl=accounts.zoho.com\n
-			crm.clientid=${process.env.crm.clientid}\n
-			crm.clientsecret=${process.env.crm.clientsecret}\n
-			crm.redirecturl=${process.env.crm.redirecturl}\n`
+			crm.clientid=${process.env.crm_clientid}\n
+			crm.clientsecret=${process.env.crm_clientsecret}\n
+			crm.redirecturl=${process.env.crm_redirecturl}\n`
 
 		fs.writeFile(
 			oauthConfigurationPropertiesPath,

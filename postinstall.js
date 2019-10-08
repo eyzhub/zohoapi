@@ -39,7 +39,7 @@ const createConfgigurationProperties = async (rootDir, dir) => {
 	let configurationPropertiesPath = path.resolve(path.join(dir, "configuration.properties"));
 	if (!checkPathExists(configurationPropertiesPath)) {
 		let apiTokenMgmtPath = path.resolve(path.join('token_mgmt', 'index.js'));
-		console.log('-> isHeroku Dyno', process.env.DYNO)
+		console.log('-> isHeroku Dyno', process.env.DYNO, apiTokenMgmtPath)
 		if (process.env.DYNO) apiTokenMgmtPath = '/'+path.join('app', 'node_modules', 'zohoapi', 'token_mgmt', 'index.js');
 		let configurationPropertiesContent = '[crm]\n'
 		configurationPropertiesContent += 'api.url=www.zohoapis.com\n'

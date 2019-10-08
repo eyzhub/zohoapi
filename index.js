@@ -284,6 +284,7 @@ class Zoho {
 				Object.assign(params, tempParams);
 
 				let response = await this.getRecords(params);
+				console.log('-> ZohoAPI getAllRecords response', params, response)
 				if (!response.records && response.records.length > 0) hasMore = false;
 				else {
 					resultData.push(...response.records)

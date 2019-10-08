@@ -26,7 +26,7 @@ const createEnv = async (dir) => {
 		envContent += `S3_BUCKET=${process.env.S3_BUCKET}\n`
 		envContent += `S3_KEY=zoho_token.json`
 
-		fs.writeFileSync(dir, envContent, (err) => {
+		fs.writeFile(dir, envContent, (err) => {
 			if (err) {
 				return console.log(err);
 			}
@@ -45,7 +45,7 @@ const createConfgigurationProperties = async (rootDir, dir) => {
 		configurationPropertiesContent += `api.user_identifier=${process.env.api_user_identifier}\n`
 		configurationPropertiesContent += `api.tokenmanagement=${apiTokenMgmtPath}`
 
-		fs.writeFileSync(configurationPropertiesPath, configurationPropertiesContent, (err) => {
+		fs.writeFile(configurationPropertiesPath, configurationPropertiesContent, (err) => {
 			if (err) {
 				console.log(`Failed created ${configurationPropertiesPath}`);
 			}
@@ -64,7 +64,7 @@ const createOauthProperties = async (dir) => {
 		oauthConfigurationPropertiesContent += `crm.clientsecret=${process.env.crm_clientsecret}\n`
 		oauthConfigurationPropertiesContent += `crm.redirecturl=${process.env.crm_redirecturl}\n`
 
-		fs.writeFileSync(
+		fs.writeFile(
 			oauthConfigurationPropertiesPath,
 			oauthConfigurationPropertiesContent,
 			(err) => {

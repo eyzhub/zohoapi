@@ -99,8 +99,8 @@ class Zoho {
 
 		if (!params.has_subform) {
 			try {
+				console.log('-> getRecords client.API.MODULES.get(input)', input)
 				response = await client.API.MODULES.get(input);
-				console.log('-> getRecords client.API.MODULES.get(input)', input, ' response:', response)
 				if (response.statusCode != 200) {
 					return { records: [], statusCode: response.statusCode, info: jsonResponse.info };
 				}

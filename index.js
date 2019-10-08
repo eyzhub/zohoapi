@@ -80,7 +80,7 @@ class Zoho {
 	 * @returns {List} response.records if there are records.
 	 */
 	async getRecords(params) {
-		console.log('-> ZohoAPI getRecords')
+		console.log('-> ZohoAPI getRecords', Object.keys(process.env))
 		if (!params.module) {
 			return { error: true };
 		}
@@ -99,7 +99,7 @@ class Zoho {
 
 		if (!params.has_subform) {
 			try {
-				console.log('-> getRecords client.API.MODULES.get(input)', input)
+				// console.log('-> getRecords client.API.MODULES.get(input)', input)
 				response = await client.API.MODULES.get(input);
 				if (response.statusCode != 200) {
 					return { records: [], statusCode: response.statusCode, info: jsonResponse.info };
@@ -113,7 +113,7 @@ class Zoho {
 
 		try {
 			let response = await client.API.MODULES.get(input);
-			console.log('-> getRecords client.API.MODULES.get(input)', input, ' response:', response)
+			// console.log('-> getRecords client.API.MODULES.get(input)', input, ' response:', response)
 			if (!response.body)
 				return { records: [], statusCode: 204 };
 
@@ -282,7 +282,7 @@ class Zoho {
 				Object.assign(params, tempParams);
 
 				let response = await this.getRecords(params);
-				console.log('-> ZohoAPI getAllRecords response', params, response)
+				// console.log('-> ZohoAPI getAllRecords response', params, response)
 				if (!response.records && response.records.length > 0) hasMore = false;
 				else {
 					resultData.push(...response.records)

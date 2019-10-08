@@ -7,7 +7,6 @@ exports.expiryInterval = expiryInterval;
  * Save token to s3. This function is called by zoho with the token object.
  */
 exports.saveOAuthTokens = async (tokenObj) => {
-	// console.log('-> saveOAuthTokens', tokenObj);
 
 	try {
 		await tokens.setTokens(tokenObj);
@@ -24,7 +23,6 @@ exports.saveOAuthTokens = async (tokenObj) => {
  * This function is called by zoho with the token object.
  */
 exports.updateOAuthTokens = async (tokenObj) => {
-	// console.log('-> updateOAuthTokens', tokenObj);
 
 	if (!tokenObj.refresh_token) {
 		let tokenBody = await tokens.getTokens();
@@ -49,7 +47,6 @@ exports.updateOAuthTokens = async (tokenObj) => {
 exports.getOAuthTokens = async (userIdentifier) => {
 	let tokenBody = await tokens.getTokens();
 	let token = JSON.parse(tokenBody.Body.toString());
-	// console.log('-> getOAuthTokens', token);
 
 	//console.log(`token will expire at ${token.expires_in}`);
 	var result = {};

@@ -83,8 +83,11 @@ const createOauthProperties = async (dir) => {
  *
  */
 const main = async () => {
+	console.log("zoho api main");
+	// console.log(process.env);
 	if (process.env.INIT_CWD) {
 		let rootDir = process.env.INIT_CWD;
+		console.log(rootDir);
 		//let resourcesPath = path.join(rootDir, "resources");
 
 		// 1. create .env for token management data using s3

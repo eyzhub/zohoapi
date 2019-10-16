@@ -84,7 +84,7 @@ const createOauthProperties = async (dir) => {
  */
 const main = async () => {
 	console.log("zoho api main");
-	console.log(process.env);
+	// console.log(process.env);
 	if (process.env.INIT_CWD) {
 		let rootDir = process.env.INIT_CWD;
 		console.log(rootDir);

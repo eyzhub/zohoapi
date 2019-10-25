@@ -98,5 +98,28 @@ let result1 = await zoho.searchRecords(params1);
 console.log(result1);
 ```
 
+6. Get all records
 
-**Note**: Use api names for the modules and field names (Tested).
+```
+let params = { module: "Products"};
+let result = await zoho.getAllRecords(params);
+
+if (result.statusCode == 200) {
+	let records = result.records;
+	let relatedModules = result.related_modules;
+	conso.log(relatedModules.length);
+	console.log(records.length);
+	// loop records
+	// loop records of a relatedModule - relatedModules[0]["records"]
+}
+```
+
+
+
+
+**Note**
+
+1. Use api names for the modules and field names (Tested).
+2. `getAllRecords` and `getRecordsModifiedAfter` 
+return related modules of type _multiselectlookup_. 
+To turn this off, set `params.fetch_related = false`

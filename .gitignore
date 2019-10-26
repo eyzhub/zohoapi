@@ -61,3 +61,5 @@ typings/
 .next
 token_mgmt/.DS_Store
 docs/.DS_Store
+
+.idea/

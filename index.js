@@ -64,9 +64,8 @@ class Zoho {
         var ts = Math.round((new Date()).getTime());
 
         if (!this.client) await zcrmsdk.initialize();
-        if (module_options.debug) console.log('ZohoAPI ts, expiretime', ts, expirytime);
+        // if (module_options.debug) console.log('ZohoAPI ts, expiretime', ts, expirytime);
         let toInit = ts >= (expirytime - 2000);
-
 
         if (toInit) await zcrmsdk.initialize();
 
@@ -201,7 +200,7 @@ class Zoho {
     }
 
     async getMultiLookupFields(module) {
-        await this.getClient();
+        await this.getClient(true);
         let url = `https://www.zohoapis.com/crm/v2/settings/related_lists?module=${module}`;
 
         try {

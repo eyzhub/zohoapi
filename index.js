@@ -298,8 +298,6 @@ class Zoho {
 
         if (result.error) return result;
 
-        console.log(params);
-
         let fetchRelated = true;
         if ("fetch_related" in params) fetchRelated = params.fetch_related;
 
@@ -314,6 +312,7 @@ class Zoho {
 
             let relatedModuleRParams = params;
             relatedModuleRParams["module"] = relatedModule.module;
+            relatedModuleRParams["has_subform"] = false;
 
             let relatedModuleResult = await this.__getRecordsModifiedAfter(relatedModuleRParams);
             // console.log(relatedModuleResult);
@@ -388,8 +387,12 @@ class Zoho {
 
         for (let relatedModule of relatedModules) {
             if (module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
-
-            let relatedModuleResult = await this.__getAllRecords({ module: relatedModule.module });
+            
+            let relatedModuleParams = params;
+            relatedModuleParams["module"] = relatedModule.module;
+            relatedModuleParams["has_subform"] = false;
+            
+            let relatedModuleResult = await this.__getAllRecords(relatedModuleParams);
             if (relatedModuleResult.statusCode == 200) {
                 result["related_modules"].push({
                     "module": relatedModule.module,

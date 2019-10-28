@@ -400,6 +400,7 @@ class Zoho {
             
             relatedModuleParams["module"] = relatedModule.module;
             relatedModuleParams["has_subform"] = false;
+            relatedModuleParams["page"] = 1;
             
             let relatedModuleResult = await this.__getAllRecords(relatedModuleParams);
             if (relatedModuleResult.statusCode == 200) {

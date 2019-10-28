@@ -64,7 +64,7 @@ class Zoho {
         var ts = Math.round((new Date()).getTime());
 
         if (!this.client) await zcrmsdk.initialize();
-        console.log(ts - expirytime);
+        if (module_options.debug) console.log('ZohoAPI ts, expiretime', ts, expirytime);
         let toInit = ts >= (expirytime - 2000);
 
 
@@ -216,7 +216,7 @@ class Zoho {
             }
 
             for (let relatedModule of response.related_lists) {
-                console.log(relatedModule);
+                if (module_options.debug) console.log('ZohoAPI relatedModule', relatedModule);                
                 if (relatedModule.type === "multiselectlookup") relatedModules.push(relatedModule);
             }
             return relatedModules;

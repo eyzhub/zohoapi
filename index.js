@@ -201,6 +201,7 @@ class Zoho {
     }
 
     async getMultiLookupFields(module) {
+        await this.getClient();
         let url = `https://www.zohoapis.com/crm/v2/settings/related_lists?module=${module}`;
 
         try {
@@ -208,6 +209,11 @@ class Zoho {
             let response = JSON.parse(responseS);
 
             let relatedModules = [];
+            
+            if (!response.related_lists) {
+                if (module_options.debug) console.log('ZohoAPI getMultiLookupFields', response);
+                return [];
+            }
 
             for (let relatedModule of response.related_lists) {
                 if (relatedModule.type === "multiselectlookup") relatedModules.push(relatedModule);
@@ -313,6 +319,7 @@ class Zoho {
             let relatedModuleRParams = params;
             relatedModuleRParams["module"] = relatedModule.module;
             relatedModuleRParams["has_subform"] = false;
+            relatedModuleRParams["page"] = 1;
 
             let relatedModuleResult = await this.__getRecordsModifiedAfter(relatedModuleRParams);
             // console.log(relatedModuleResult);
@@ -328,7 +335,7 @@ class Zoho {
     }
 
     async __getAllRecords(params) {
-        if (module_options.debug) console.log('ZohoAPI getAllRecords', JSON.stringify(params));
+        if (module_options.debug) console.log('ZohoAPI __getAllRecords', JSON.stringify(params));
         let page = 1;
         let per_page = params.per_page ? params.per_page : 100;
         let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
@@ -374,6 +381,8 @@ class Zoho {
         if (!params.module) {
             return { error: true };
         }
+        
+        let relatedModuleParams = params;
         let result = await this.__getAllRecords(params);
 
         let fetchRelated = true;
@@ -388,7 +397,7 @@ class Zoho {
         for (let relatedModule of relatedModules) {
             if (module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
             
-            let relatedModuleParams = params;
+            
             relatedModuleParams["module"] = relatedModule.module;
             relatedModuleParams["has_subform"] = false;
             

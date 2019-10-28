@@ -64,8 +64,8 @@ class Zoho {
         var ts = Math.round((new Date()).getTime());
 
         if (!this.client) await zcrmsdk.initialize();
-
-        let toInit = ts >= (expirytime - 1000);
+        console.log(ts - expirytime);
+        let toInit = ts >= (expirytime - 2000);
 
 
         if (toInit) await zcrmsdk.initialize();
@@ -216,6 +216,7 @@ class Zoho {
             }
 
             for (let relatedModule of response.related_lists) {
+                console.log(relatedModule);
                 if (relatedModule.type === "multiselectlookup") relatedModules.push(relatedModule);
             }
             return relatedModules;

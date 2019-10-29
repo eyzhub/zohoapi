@@ -62,16 +62,26 @@ class Zoho {
         let expirytime = tokenObj[0].expirytime;
         let refreshToken = tokenObj[0].refreshtoken;
         var ts = Math.round((new Date()).getTime());
+        
+        let tokenGTimeDiff = 600000;
 
         if (!this.client) await zcrmsdk.initialize();
-        // if (module_options.debug) console.log('ZohoAPI ts, expiretime', ts, expirytime);
-        let toInit = ts >= (expirytime - 2000);        
+        let toInit = ts >= (expirytime - tokenGTimeDiff);
+    
+        if (module_options.debug) {
+            // var d1 = new Date(ts);
+            var d2 = new Date(expirytime);
+            var d3 = new Date(expirytime - tokenGTimeDiff);
+            
+            console.log(`Token expires at ${d2}`);
+            console.log(`Token will be generated at ${d3}`);
+        }
 
         if (toInit) await zcrmsdk.initialize();
 
         this.client = zcrmsdk;                
 
-        if (generate) {
+        if (toInit && generate) {
             if (module_options.debug) console.log('ZohoAPI generating refresh token');
             await zcrmsdk.generateAuthTokenfromRefreshToken(null, refreshToken);
         }
@@ -216,7 +226,7 @@ class Zoho {
             }
 
             for (let relatedModule of response.related_lists) {
-                if (module_options.debug) console.log('ZohoAPI relatedModule', relatedModule);                
+                // if (module_options.debug) console.log('ZohoAPI relatedModule', relatedModule);
                 if (relatedModule.type === "multiselectlookup") relatedModules.push(relatedModule);
             }
             return relatedModules;
@@ -382,6 +392,8 @@ class Zoho {
         if (!params.module) {
             return { error: true };
         }
+    
+        // await this.getMultiLookupFields(params.module);
         
         let relatedModuleParams = params;
         let result = await this.__getAllRecords(params);

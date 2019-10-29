@@ -53,7 +53,7 @@ exports.getOAuthTokens = async (userIdentifier) => {
 
 	return new Promise(function(resolve, reject) {
 		result.accesstoken = token.access_token;
-		result.expirytime = token.expires_in + expiryInterval;
+		result.expirytime = token.expires_in; //+ expiryInterval;
 		result.refreshtoken = token.refresh_token;
 
 		var result_array = [];

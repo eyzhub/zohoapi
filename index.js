@@ -4,6 +4,8 @@ const s3Tokens = require("./token_mgmt");
 const request = require('request');
 let module_options = {};
 
+const tokenGTimeDiff = 600000;
+
 function requestPromise(options) {
     return new Promise(function (resolve, reject) {
         request(options, function (error, response, body) {
@@ -62,20 +64,9 @@ class Zoho {
         let expirytime = tokenObj[0].expirytime;
         let refreshToken = tokenObj[0].refreshtoken;
         var ts = Math.round((new Date()).getTime());
-        
-        let tokenGTimeDiff = 600000;
 
         if (!this.client) await zcrmsdk.initialize();
         let toInit = ts >= (expirytime - tokenGTimeDiff);
-    
-        if (module_options.debug) {
-            // var d1 = new Date(ts);
-            var d2 = new Date(expirytime);
-            var d3 = new Date(expirytime - tokenGTimeDiff);
-            
-            console.log(`Token expires at ${d2}`);
-            console.log(`Token will be generated at ${d3}`);
-        }
 
         if (toInit) await zcrmsdk.initialize();
 
@@ -222,6 +213,16 @@ class Zoho {
             
             if (!response.related_lists) {
                 if (module_options.debug) console.log('ZohoAPI getMultiLookupFields', response);
+                
+                let tokenObj = await s3Tokens.getOAuthTokens();
+                let expirytime = tokenObj[0].expirytime;
+                
+                var d2 = new Date(expirytime);
+                var d3 = new Date(expirytime - 60000);
+    
+                console.log(`Token expires at ${d2}`);
+                console.log(`Token generation at ${d3}`);
+                
                 return [];
             }
 
@@ -602,7 +603,7 @@ class Zoho {
             return { error: true, error_details: error };
         }
     }
-
+    
     /**
      * Update a record of a module by its id
      * @param {String} module API name of the module

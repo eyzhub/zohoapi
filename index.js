@@ -65,13 +65,14 @@ class Zoho {
 
         if (!this.client) await zcrmsdk.initialize();
         // if (module_options.debug) console.log('ZohoAPI ts, expiretime', ts, expirytime);
-        let toInit = ts >= (expirytime - 2000);
+        let toInit = ts >= (expirytime - 2000);        
 
         if (toInit) await zcrmsdk.initialize();
 
-        this.client = zcrmsdk;
+        this.client = zcrmsdk;                
 
-        if (toInit && generate) {
+        if (generate) {
+            if (module_options.debug) console.log('ZohoAPI generating refresh token');
             await zcrmsdk.generateAuthTokenfromRefreshToken(null, refreshToken);
         }
 

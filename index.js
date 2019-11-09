@@ -4,6 +4,8 @@ const s3Tokens = require("./token_mgmt");
 const request = require('request');
 let module_options = {};
 
+const tokenGTimeDiff = 600000;
+
 function requestPromise(options) {
     return new Promise(function (resolve, reject) {
         request(options, function (error, response, body) {
@@ -64,15 +66,14 @@ class Zoho {
         var ts = Math.round((new Date()).getTime());
 
         if (!this.client) await zcrmsdk.initialize();
-
-        let toInit = ts >= (expirytime - 1000);
-
+        let toInit = ts >= (expirytime - tokenGTimeDiff);
 
         if (toInit) await zcrmsdk.initialize();
 
-        this.client = zcrmsdk;
+        this.client = zcrmsdk;                
 
         if (toInit && generate) {
+            if (module_options.debug) console.log('ZohoAPI generating refresh token');
             await zcrmsdk.generateAuthTokenfromRefreshToken(null, refreshToken);
         }
 
@@ -201,6 +202,7 @@ class Zoho {
     }
 
     async getMultiLookupFields(module) {
+        await this.getClient(true);
         let url = `https://www.zohoapis.com/crm/v2/settings/related_lists?module=${module}`;
 
         try {
@@ -208,8 +210,24 @@ class Zoho {
             let response = JSON.parse(responseS);
 
             let relatedModules = [];
+            
+            if (!response.related_lists) {
+                if (module_options.debug) console.log('ZohoAPI getMultiLookupFields', response);
+                
+                let tokenObj = await s3Tokens.getOAuthTokens();
+                let expirytime = tokenObj[0].expirytime;
+                
+                var d2 = new Date(expirytime);
+                var d3 = new Date(expirytime - 60000);
+    
+                console.log(`Token expires at ${d2}`);
+                console.log(`Token generation at ${d3}`);
+                
+                return [];
+            }
 
             for (let relatedModule of response.related_lists) {
+                // if (module_options.debug) console.log('ZohoAPI relatedModule', relatedModule);
                 if (relatedModule.type === "multiselectlookup") relatedModules.push(relatedModule);
             }
             return relatedModules;
@@ -298,8 +316,6 @@ class Zoho {
 
         if (result.error) return result;
 
-        console.log(params);
-
         let fetchRelated = true;
         if ("fetch_related" in params) fetchRelated = params.fetch_related;
 
@@ -314,6 +330,8 @@ class Zoho {
 
             let relatedModuleRParams = params;
             relatedModuleRParams["module"] = relatedModule.module;
+            relatedModuleRParams["has_subform"] = false;
+            relatedModuleRParams["page"] = 1;
 
             let relatedModuleResult = await this.__getRecordsModifiedAfter(relatedModuleRParams);
             // console.log(relatedModuleResult);
@@ -329,7 +347,7 @@ class Zoho {
     }
 
     async __getAllRecords(params) {
-        if (module_options.debug) console.log('ZohoAPI getAllRecords', JSON.stringify(params));
+        if (module_options.debug) console.log('ZohoAPI __getAllRecords', JSON.stringify(params));
         let page = 1;
         let per_page = params.per_page ? params.per_page : 100;
         let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
@@ -375,6 +393,10 @@ class Zoho {
         if (!params.module) {
             return { error: true };
         }
+    
+        // await this.getMultiLookupFields(params.module);
+        
+        let relatedModuleParams = params;
         let result = await this.__getAllRecords(params);
 
         let fetchRelated = true;
@@ -388,8 +410,13 @@ class Zoho {
 
         for (let relatedModule of relatedModules) {
             if (module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
-
-            let relatedModuleResult = await this.__getAllRecords({ module: relatedModule.module });
+            
+            
+            relatedModuleParams["module"] = relatedModule.module;
+            relatedModuleParams["has_subform"] = false;
+            relatedModuleParams["page"] = 1;
+            
+            let relatedModuleResult = await this.__getAllRecords(relatedModuleParams);
             if (relatedModuleResult.statusCode == 200) {
                 result["related_modules"].push({
                     "module": relatedModule.module,
@@ -576,7 +603,7 @@ class Zoho {
             return { error: true, error_details: error };
         }
     }
-
+    
     /**
      * Update a record of a module by its id
      * @param {String} module API name of the module

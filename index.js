@@ -34,7 +34,7 @@ function execShellCommand(cmd) {
 async function __getFromZoho(url) {
     let tokenObj = await s3Tokens.getOAuthTokens();
     let accessToken = tokenObj[0].accesstoken;
-
+    
     var options = {
         method: 'get',
         url: url,
@@ -42,7 +42,7 @@ async function __getFromZoho(url) {
             Authorization: `Zoho-oauthtoken  ${accessToken}`
         }
     };
-
+    
     return requestPromise(options);
 }
 
@@ -55,31 +55,31 @@ class Zoho {
     constructor(params) {
         if (params) module_options = params
     }
-
+    
     async init() {
     }
-
+    
     async getClient(generate = false) {
         let tokenObj = await s3Tokens.getOAuthTokens();
         let expirytime = tokenObj[0].expirytime;
         let refreshToken = tokenObj[0].refreshtoken;
         var ts = Math.round((new Date()).getTime());
-
+        
         if (!this.client) await zcrmsdk.initialize();
         let toInit = ts >= (expirytime - tokenGTimeDiff);
-
+        
         if (toInit) await zcrmsdk.initialize();
-
-        this.client = zcrmsdk;                
-
+        
+        this.client = zcrmsdk;
+        
         if (toInit && generate) {
             if (module_options.debug) console.log('ZohoAPI generating refresh token');
             await zcrmsdk.generateAuthTokenfromRefreshToken(null, refreshToken);
         }
-
+        
         return this.client;
     }
-
+    
     /**
      * Fetch records of a module.
      * @param {Object} params
@@ -96,60 +96,60 @@ class Zoho {
     async getRecords(params) {
         if (module_options.debug) console.log('ZohoAPI getRecords', JSON.stringify(params));
         if (!params.module) {
-            return { error: true };
+            return {error: true};
         }
         let client = await this.getClient();
-
+        
         let page = params.page ? params.page : 1;
         let per_page = params.per_page ? params.per_page : 50;
-
+        
         let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
         let sort_order = params.sort_order ? params.sort_order : "desc";
-
-        var input = { module: params.module };
-        input.params = { page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order };
-
+        
+        var input = {module: params.module};
+        input.params = {page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order};
+        
         let response = null;
-
+        
         if (!params.has_subform) {
             try {
                 response = await client.API.MODULES.get(input);
                 if (response.statusCode != 200) {
-                    return { records: [], statusCode: response.statusCode, info: jsonResponse.info };
+                    return {records: [], statusCode: response.statusCode, info: jsonResponse.info};
                 }
                 let jsonResponse = JSON.parse(response.body);
-                return { records: jsonResponse.data, statusCode: response.statusCode, info: jsonResponse.info };
+                return {records: jsonResponse.data, statusCode: response.statusCode, info: jsonResponse.info};
             } catch (error) {
-                return { error: true, error_details: error, statusCode: 500 };
+                return {error: true, error_details: error, statusCode: 500};
             }
         }
-
+        
         try {
             let response = await client.API.MODULES.get(input);
             if (!response.body)
-                return { records: [], statusCode: 204 };
-
+                return {records: [], statusCode: 204};
+            
             let bodyObj = JSON.parse(response.body);
             let data = bodyObj.data;
-
-            if (!data) return { records: [], statusCode: 204 };
-
+            
+            if (!data) return {records: [], statusCode: 204};
+            
             let records = [];
             let zoho = new Zoho();
-
+            
             for (let item of data) {
                 let id = item.id;
                 let recordResponse = await zoho.getRecord(params.module, id);
                 let recordData = recordResponse.record;
                 records.push(recordData);
             }
-            return { records: records, statusCode: 200, info: bodyObj.info };
+            return {records: records, statusCode: 200, info: bodyObj.info};
         } catch (err) {
             console.log(err);
-            return { error: true, error_details: err };
+            return {error: true, error_details: err};
         }
     }
-
+    
     /**
      * Search records of a module. Note: subforms are not supported.
      * @param {Object} params
@@ -167,18 +167,18 @@ class Zoho {
     async searchRecords(params) {
         if (module_options.debug) console.log('ZohoAPI searchRecords', JSON.stringify(params));
         if (!params.module) {
-            return { error: true };
+            return {error: true};
         }
-
+        
         let client = await this.getClient();
-
+        
         let page = params.page ? params.page : 1;
         let per_page = params.per_page ? params.per_page : 50;
-
+        
         let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
         let sort_order = params.sort_order ? params.sort_order : "desc";
-
-        let input = { module: params.module };
+        
+        let input = {module: params.module};
         input.params = {
             page: page,
             per_page: per_page,
@@ -186,29 +186,29 @@ class Zoho {
             sort_order: sort_order,
             criteria: params.criteria
         };
-
+        
         let response = null;
-
+        
         try {
             response = await client.API.MODULES.search(input);
             if (response.statusCode != 200) {
-                return { records: [], statusCode: response.statusCode };
+                return {records: [], statusCode: response.statusCode};
             }
             let jsonResponse = JSON.parse(response.body);
-            return { records: jsonResponse.data, statusCode: response.statusCode, info: jsonResponse.info };
+            return {records: jsonResponse.data, statusCode: response.statusCode, info: jsonResponse.info};
         } catch (error) {
-            return { error: true, error_details: error, statusCode: 500 };
+            return {error: true, error_details: error, statusCode: 500};
         }
     }
-
+    
     async getMultiLookupFields(module) {
         await this.getClient(true);
         let url = `https://www.zohoapis.com/crm/v2/settings/related_lists?module=${module}`;
-
+        
         try {
             let responseS = await __getFromZoho(url);
             let response = JSON.parse(responseS);
-
+            
             let relatedModules = [];
             
             if (!response.related_lists) {
@@ -219,55 +219,55 @@ class Zoho {
                 
                 var d2 = new Date(expirytime);
                 var d3 = new Date(expirytime - 60000);
-    
+                
                 console.log(`Token expires at ${d2}`);
                 console.log(`Token generation at ${d3}`);
                 
                 return [];
             }
-
+            
             for (let relatedModule of response.related_lists) {
                 // if (module_options.debug) console.log('ZohoAPI relatedModule', relatedModule);
                 if (relatedModule.type === "multiselectlookup") relatedModules.push(relatedModule);
             }
             return relatedModules;
-
+            
         } catch (e) {
             console.log(e);
             return [];
         }
     }
-
+    
     async __getRecordsModifiedAfter(params) {
         if (module_options.debug) console.log('ZohoAPI getRecordsModifiedAfter', JSON.stringify(params));
         if (!params.module) {
-            return { error: true };
+            return {error: true};
         }
-
+        
         let modifiedAfter = params.modified_after;
-
-        if (!modifiedAfter) return { error: true, records: null };
-
+        
+        if (!modifiedAfter) return {error: true, records: null};
+        
         let page = params.page ? params.page : 1;
         let per_page = params.per_page ? params.per_page : 100;
         let sort_by = "Modified_Time";
         let sort_order = "desc";
-
+        
         let zoho = new Zoho();
         let hasMore = true;
         let resultData = [];
-
+        
         while (hasMore) {
             try {
-                let tempParams = { page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order };
+                let tempParams = {page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order};
                 Object.assign(params, tempParams);
-
+                
                 let response = await zoho.getRecords(params);
-
+                
                 if (!response.records) hasMore = false;
                 else {
                     let data = response.records;
-
+                    
                     for (let item of data) {
                         // console.log(item.Modified_Time, modifiedAfter, item.Modified_Time >= modifiedAfter);
                         if (item.Modified_Time >= modifiedAfter) resultData.push(item);
@@ -280,13 +280,13 @@ class Zoho {
                 page++;
             } catch (err) {
                 hasMore = false;
-                return { error: true, count: 0, error_details: err };
+                return {error: true, count: 0, error_details: err};
             }
         }
-
-        return { error: false, records: resultData, count: resultData.length };
+        
+        return {error: false, records: resultData, count: resultData.length};
     }
-
+    
     /**
      * Fetch records of a module modified on or after a given timestamp.
      * @param {Object} params
@@ -305,34 +305,34 @@ class Zoho {
     async getRecordsModifiedAfter(params) {
         if (module_options.debug) console.log('ZohoAPI getRecordsModifiedAfter', JSON.stringify(params));
         if (!params.module) {
-            return { error: true };
+            return {error: true};
         }
-
+        
         let modifiedAfter = params.modified_after;
-
-        if (!modifiedAfter) return { error: true, records: null };
-
+        
+        if (!modifiedAfter) return {error: true, records: null};
+        
         let result = await this.__getRecordsModifiedAfter(params);
-
+        
         if (result.error) return result;
-
+        
         let fetchRelated = true;
         if ("fetch_related" in params) fetchRelated = params.fetch_related;
-
+        
         if (!fetchRelated) return result;
-
+        
         result["related_modules"] = [];
-
+        
         let relatedModules = await this.getMultiLookupFields(params.module);
-
+        
         for (let relatedModule of relatedModules) {
             if (module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
-
+            
             let relatedModuleRParams = params;
             relatedModuleRParams["module"] = relatedModule.module;
             relatedModuleRParams["has_subform"] = false;
             relatedModuleRParams["page"] = 1;
-
+            
             let relatedModuleResult = await this.__getRecordsModifiedAfter(relatedModuleRParams);
             // console.log(relatedModuleResult);
             if (!relatedModuleResult.error) {
@@ -342,38 +342,43 @@ class Zoho {
                 });
             }
         }
-
+        
         return result;
     }
-
+    
     async __getAllRecords(params) {
         if (module_options.debug) console.log('ZohoAPI __getAllRecords', JSON.stringify(params));
         let page = 1;
         let per_page = params.per_page ? params.per_page : 100;
         let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
         let sort_order = params.sort_order ? params.sort_order : "desc";
-
+        
         let hasMore = true;
         let resultData = [];
-
+        
         while (hasMore) {
             try {
-                let tempParams = { page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order };
+                let tempParams = {page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order};
                 Object.assign(params, tempParams);
-
+                
                 let response = await this.getRecords(params);
-                if (!response.records && response.records.length > 0) hasMore = false;
-                else {
-                    resultData.push(...response.records)
+                console.log(response);
+                
+                if (response.records) {
+                    if (response.records.length > 0) resultData.push(...response.records);
+                    else hasMore = false;
+                } else {
+                    hasMore = false;
                 }
+                    
                 page++;
             } catch (err) {
                 hasMore = false;
             }
         }
-        return { records: resultData, count: resultData.length, statusCode: 200 };
+        return {records: resultData, count: resultData.length, statusCode: 200};
     }
-
+    
     /**
      * Fetch all records of a module.
      * @param {Object} params
@@ -391,23 +396,23 @@ class Zoho {
     async getAllRecords(params) {
         if (module_options.debug) console.log('ZohoAPI getAllRecords', JSON.stringify(params));
         if (!params.module) {
-            return { error: true };
+            return {error: true};
         }
-    
+        
         // await this.getMultiLookupFields(params.module);
         
         let relatedModuleParams = params;
         let result = await this.__getAllRecords(params);
-
+        
         let fetchRelated = true;
         if ("fetch_related" in params) fetchRelated = params.fetch_related;
-
+        
         if (!fetchRelated) return result;
-
+        
         result["related_modules"] = [];
-
+        
         let relatedModules = await this.getMultiLookupFields(params.module);
-
+        
         for (let relatedModule of relatedModules) {
             if (module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
             
@@ -424,20 +429,20 @@ class Zoho {
                 });
             }
         }
-
+        
         return result;
     }
-
-
+    
+    
     async bulkRead(id) {
         if (module_options.debug) console.log('ZohoAPI bulkRead', id);
         await this.getClient();
-
+        
         let url = `https://www.zohoapis.com/crm/bulk/v2/read/${id}`;
-
+        
         let tokenObj = await s3Tokens.getOAuthTokens();
         let accessToken = tokenObj[0].accesstoken;
-
+        
         let options = {
             method: 'get',
             url: url,
@@ -445,34 +450,34 @@ class Zoho {
                 Authorization: `Zoho-oauthtoken  ${accessToken}`
             }
         };
-
+        
         try {
             let responseS = await requestPromise(options);
             let response = JSON.parse(responseS);
-
-            if (!response.data) return { success: false, code: response.code };
+            
+            if (!response.data) return {success: false, code: response.code};
             let data = response.data[0];
-
-            return { success: true, data: data };
+            
+            return {success: true, data: data};
         } catch (error) {
-            return { success: false, error: console.error() };
+            return {success: false, error: console.error()};
         }
     }
-
+    
     async bulkReadCreate(module) {
         if (module_options.debug) console.log('ZohoAPI bulkReadCreate', JSON.stringify(module));
         if (!module) {
-            return { error: true };
+            return {error: true};
         }
-
+        
         await this.getClient(true);
-
+        
         let tokenObj = await s3Tokens.getOAuthTokens();
         let accessToken = tokenObj[0].accesstoken;
-
+        
         let url = "https://www.zohoapis.com/crm/bulk/v2/read";
-        let jsonBody = { query: { module: module } };
-
+        let jsonBody = {query: {module: module}};
+        
         let options = {
             method: 'post',
             body: jsonBody,
@@ -482,49 +487,49 @@ class Zoho {
                 Authorization: `Zoho-oauthtoken  ${accessToken}`
             }
         };
-
+        
         try {
             let response = await requestPromise(options);
-            if (!response.data) return { success: false, code: response.code };
+            if (!response.data) return {success: false, code: response.code};
             let data = response.data[0];
             let details = data.details;
-
-            return { success: true, details: details };
+            
+            return {success: true, details: details};
         } catch (error) {
-            return { success: false, error: console.error() };
+            return {success: false, error: console.error()};
         }
     }
-
+    
     async bulkReadDownload(jobId, destination) {
         if (module_options.debug) console.log('ZohoAPI bulkReadDownload', JSON.stringify(module));
-        if (!destination.endsWith(".zip")) return { success: false };
-
+        if (!destination.endsWith(".zip")) return {success: false};
+        
         await this.getClient();
-
+        
         let tokenObj = await s3Tokens.getOAuthTokens();
         let accessToken = tokenObj[0].accesstoken;
         // console.log(accessToken);
-
+        
         let url = `https://www.zohoapis.com/crm/bulk/v2/read/${jobId}/result`;
-
+        
         let cmd = `curl -o ${destination} "${url}" -X GET -H "Authorization: Zoho-oauthtoken ${accessToken}"`;
-
+        
         try {
             // console.log(cmd);
             await execShellCommand(cmd);
             await execShellCommand(`unzip ${destination}`);
             console.log(`extracted file - ${jobId}.csv`);
-            return { success: true };
+            return {success: true};
         } catch (error) {
             console.log(error);
-            return { success: false };
+            return {success: false};
         }
     }
-
+    
     async _checkStatus(jobId, destination) {
         var intervalId = null;
         let zoho = new Zoho();
-
+        
         let state = async function () {
             let resp = await zoho.bulkRead(jobId);
             let jState = resp.data.state;
@@ -534,7 +539,7 @@ class Zoho {
             }
             return jState;
         };
-
+        
         return new Promise((resolve, reject) => {
             intervalId = setInterval(() => {
                 state()
@@ -550,39 +555,39 @@ class Zoho {
             }, 10000);
         });
     }
-
+    
     async downloadModule(module, destination) {
         if (module_options.debug) console.log('ZohoAPI downloadModule', JSON.stringify(module), destination);
         let bulkReadCreateResult = null;
         let bulkReadResult = null;
         let jobId = null;
-
+        
         try {
             bulkReadCreateResult = await this.bulkReadCreate(module);
-            if (!bulkReadCreateResult.success) return { success: false };
+            if (!bulkReadCreateResult.success) return {success: false};
         } catch (error) {
-            return { success: false };
+            return {success: false};
         }
-
+        
         try {
             jobId = bulkReadCreateResult.details.id;
             bulkReadResult = await this.bulkRead(jobId);
-            if (!bulkReadResult.data) return { success: false };
-
+            if (!bulkReadResult.data) return {success: false};
+            
         } catch (error) {
-            return { success: false };
+            return {success: false};
         }
-
+        
         console.log(`started with jobId ${jobId}`);
-
+        
         try {
             await this._checkStatus(jobId, destination);
-            return { success: true, jobId: jobId };
+            return {success: true, jobId: jobId};
         } catch (err) {
-            return { success: false, jobId: jobId };
+            return {success: false, jobId: jobId};
         }
     }
-
+    
     /**
      *
      * @param {String} module API name of the module
@@ -592,15 +597,15 @@ class Zoho {
      */
     async getRecord(module, id) {
         if (module_options.debug) console.log('ZohoAPI getRecord', JSON.stringify(module), id);
-        var input = { module: module, id: id };
+        var input = {module: module, id: id};
         let client = await this.getClient();
         try {
             let response = await client.API.MODULES.get(input);
-            if (response.body) return { record: JSON.parse(response.body).data[0] }
+            if (response.body) return {record: JSON.parse(response.body).data[0]}
             else return {}
-
+            
         } catch (error) {
-            return { error: true, error_details: error };
+            return {error: true, error_details: error};
         }
     }
     
@@ -613,9 +618,9 @@ class Zoho {
      */
     async updateRecord(module, id, data) {
         if (module_options.debug) console.log('ZohoAPI updateRecord', JSON.stringify(module), id);
-        var input = { module: module, id: id };
-        input.body = { data: data };
-
+        var input = {module: module, id: id};
+        input.body = {data: data};
+        
         let client = await this.getClient();
         return client.API.MODULES.put(input)
             .then(function (response) {
@@ -624,10 +629,10 @@ class Zoho {
             })
             .catch(function (err) {
                 console.log(err)
-                return { error: err };
+                return {error: err};
             });
     }
-
+    
     /**
      * Insert a record of a module by its id. The data object needs to an array
      *    with an object and it should have the mandatory Name field.
@@ -639,9 +644,9 @@ class Zoho {
      */
     async insertRecord(module, data) {
         if (module_options.debug) console.log('ZohoAPI insertRecord', JSON.stringify(module));
-        var input = { module: module };
-        input.body = { data: data };
-
+        var input = {module: module};
+        input.body = {data: data};
+        
         let client = await this.getClient();
         return client.API.MODULES.post(input)
             .then(function (response) {

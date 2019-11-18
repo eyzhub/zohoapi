@@ -362,9 +362,11 @@ class Zoho {
                 Object.assign(params, tempParams);
 
                 let response = await this.getRecords(params);
-                if (!response.records && response.records.length > 0) hasMore = false;
-                else {
-                    resultData.push(...response.records)
+                if (response.records) {
+                    if (response.records.length > 0) resultData.push(...response.records);
+                    else hasMore = false;
+                } else {
+                    hasMore = false;
                 }
                 page++;
             } catch (err) {

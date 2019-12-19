@@ -54,6 +54,7 @@ class Zoho {
      */
     constructor(params) {
         if (params) module_options = params
+        this.records_batch_size = 5;
     }
 
     async init() {
@@ -106,7 +107,7 @@ class Zoho {
                     });
                 }
 
-                if (toFetchSubform) {                    
+                if (toFetchSubform) {
                     let id = item.id;
                     if (module_options.debug) console.log('ZohoAPI getSubform for', JSON.stringify(params), id);
                     let recordResponse = await zoho.getRecord(params.module, id);
@@ -136,16 +137,16 @@ class Zoho {
      * @returns {Object} response Zoho API Response.
      * @returns {Array} response.records if there are records.
      */
-    async getRecords(params) {
-        if (module_options.debug) console.log('ZohoAPI getRecords', JSON.stringify(params));
+    async getRecords(params, whichPage = 1) {
         if (!params.module) {
             return { error: true };
         }
-        let client = await this.getClient();
-
+        
         let page = params.page ? params.page : 1;
-        let per_page = params.per_page ? params.per_page : 50;
 
+        if (whichPage) page = whichPage;
+
+        let per_page = params.per_page ? params.per_page : 50;
         let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
         let sort_order = params.sort_order ? params.sort_order : "desc";
 
@@ -156,11 +157,15 @@ class Zoho {
 
         let subformCondition = (params.has_subform || params.where_subform);
 
+        if (module_options.debug) console.log('ZohoAPI getRecords', JSON.stringify(params));
+
+        let client = await this.getClient();
+
         if (!subformCondition) {
             try {
                 response = await client.API.MODULES.get(input);
                 if (response.statusCode != 200) {
-                    return { records: [], statusCode: response.statusCode, info: jsonResponse.info };
+                    return { records: [], statusCode: response.statusCode, info: null };
                 }
                 let jsonResponse = JSON.parse(response.body);
                 return { records: jsonResponse.data, statusCode: response.statusCode, info: jsonResponse.info };
@@ -367,8 +372,76 @@ class Zoho {
         return result;
     }
 
-    async __getAllRecords(params) {
+
+    async __getRecordsBatch(params, startPage = 1) {
+        let allPromises = [];
+        let resultData = { records: [], hasMore: true };
+
+        for (let i = startPage; i < startPage + this.records_batch_size; i++) {
+            let per_page = params.per_page ? params.per_page : 100;
+            let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
+            let sort_order = params.sort_order ? params.sort_order : "desc";
+
+            let tempParams = { per_page: per_page, sort_by: sort_by, sort_order: sort_order };
+
+            let inputParams = params;
+            Object.assign(inputParams, tempParams);
+            inputParams["page"] = i;
+
+            allPromises.push(this.getRecords(inputParams, i));
+        }
+
+        try {
+            let results = await Promise.all(allPromises);
+
+            for (let result of results) {
+                if (result.records && result.records.length > 0) {
+                    let newResults = resultData.records;
+                    newResults.push(...result.records);
+                    resultData.records = newResults;
+                    resultData.startPage = startPage + this.records_batch_size;
+                }
+                else resultData.hasMore = false;
+            }
+            return resultData;
+        } catch (error) {
+            return resultData;
+        }
+    }
+
+    /**
+     * Promise based approach - parallel calls in a batch are made to zoho. 
+     * See: batch size in the class constructor.
+     * @param {*} params 
+     */
+    async __getAllRecordsBatch(params) {
         if (module_options.debug) console.log('ZohoAPI __getAllRecords', JSON.stringify(params));
+        let hasMore = true;
+        let startPage = 1;
+        let records = [];
+
+
+        while (hasMore) {
+            let resultData = await this.__getRecordsBatch(params, startPage);
+
+            if (resultData.hasMore) {
+                startPage = resultData.startPage;
+            } else {
+                hasMore = false;
+            }
+
+            records.push(...resultData.records);
+        }
+
+        return { records: records, count: records.length, statusCode: 200 };
+    }
+
+    /**
+     * Sequentially getRecords is called. If there aee 50 pages for a module, they are called 
+     * one after the other.
+     * @param {*} params 
+     */
+    async __getAllRecordsSequential(params) {
         let page = 1;
         let per_page = params.per_page ? params.per_page : 100;
         let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
@@ -397,6 +470,12 @@ class Zoho {
         return { records: resultData, count: resultData.length, statusCode: 200 };
     }
 
+    async __getAllRecords(params) {
+        return await this.__getAllRecordsBatch(params);
+        // return await this.__getAllRecordsSequential(params);
+    }
+
+
     /**
      * Fetch all records of a module.
      * @param {Object} params
@@ -411,7 +490,8 @@ class Zoho {
      * @returns {Array} response.records if there are results.
      * @returns {Integer} response.count if there are results.
      */
-    async getAllRecords(params) {
+    async getAllRecords(parameters) {
+        let params = parameters;
         if (module_options.debug) console.log('ZohoAPI getAllRecords', JSON.stringify(params));
         if (!params.module) {
             return { error: true };
@@ -561,7 +641,7 @@ class Zoho {
             intervalId = setInterval(() => {
                 state()
                     .then((data) => {
-                        console.log(data);
+                        // console.log(data);
                         if (!["ADDED", "COMPLETED", "IN PROGRESS", "QUEUED"].includes(data)) {
                             reject(false);
                         } else if (data === 'COMPLETED') {

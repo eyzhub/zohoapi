@@ -70,7 +70,7 @@ class Zoho {
 
         if (toInit) await zcrmsdk.initialize();
 
-        this.client = zcrmsdk;                
+        this.client = zcrmsdk;
 
         if (toInit && generate) {
             if (module_options.debug) console.log('ZohoAPI generating refresh token');
@@ -78,6 +78,49 @@ class Zoho {
         }
 
         return this.client;
+    }
+
+
+    async __getRecordsWithSubform(client, input, params) {
+        try {
+            let response = await client.API.MODULES.get(input);
+            if (!response.body)
+                return { records: [], statusCode: 204 };
+
+            let bodyObj = JSON.parse(response.body);
+            let data = bodyObj.data;
+
+            if (!data) return { records: [], statusCode: 204 };
+
+            let records = [];
+            let zoho = new Zoho();
+
+            for (let item of data) {
+                let toFetchSubform = false;
+
+                if (params.has_subform) toFetchSubform = true;
+                else {
+                    toFetchSubform = true;
+                    Object.keys(params.where_subform).forEach(function (key) {
+                        toFetchSubform = toFetchSubform && (item[key] == params.where_subform[key]);
+                    });
+                }
+
+                if (toFetchSubform) {                    
+                    let id = item.id;
+                    if (module_options.debug) console.log('ZohoAPI getSubform for', JSON.stringify(params), id);
+                    let recordResponse = await zoho.getRecord(params.module, id);
+                    let recordData = recordResponse.record;
+                    records.push(recordData);
+                } else {
+                    records.push(item);
+                }
+            }
+            return { records: records, statusCode: 200, info: bodyObj.info };
+        } catch (err) {
+            console.log(err);
+            return { error: true, error_details: err };
+        }
     }
 
     /**
@@ -111,7 +154,9 @@ class Zoho {
 
         let response = null;
 
-        if (!params.has_subform) {
+        let subformCondition = (params.has_subform || params.where_subform);
+
+        if (!subformCondition) {
             try {
                 response = await client.API.MODULES.get(input);
                 if (response.statusCode != 200) {
@@ -124,30 +169,7 @@ class Zoho {
             }
         }
 
-        try {
-            let response = await client.API.MODULES.get(input);
-            if (!response.body)
-                return { records: [], statusCode: 204 };
-
-            let bodyObj = JSON.parse(response.body);
-            let data = bodyObj.data;
-
-            if (!data) return { records: [], statusCode: 204 };
-
-            let records = [];
-            let zoho = new Zoho();
-
-            for (let item of data) {
-                let id = item.id;
-                let recordResponse = await zoho.getRecord(params.module, id);
-                let recordData = recordResponse.record;
-                records.push(recordData);
-            }
-            return { records: records, statusCode: 200, info: bodyObj.info };
-        } catch (err) {
-            console.log(err);
-            return { error: true, error_details: err };
-        }
+        return await this.__getRecordsWithSubform(client, input, params);
     }
 
     /**
@@ -210,19 +232,18 @@ class Zoho {
             let response = JSON.parse(responseS);
 
             let relatedModules = [];
-            
+
             if (!response.related_lists) {
                 if (module_options.debug) console.log('ZohoAPI getMultiLookupFields', response);
-                
+
                 let tokenObj = await s3Tokens.getOAuthTokens();
                 let expirytime = tokenObj[0].expirytime;
-                
                 var d2 = new Date(expirytime);
                 var d3 = new Date(expirytime - 60000);
-    
+
                 console.log(`Token expires at ${d2}`);
                 console.log(`Token generation at ${d3}`);
-                
+
                 return [];
             }
 
@@ -395,9 +416,9 @@ class Zoho {
         if (!params.module) {
             return { error: true };
         }
-    
+
         // await this.getMultiLookupFields(params.module);
-        
+
         let relatedModuleParams = params;
         let result = await this.__getAllRecords(params);
 
@@ -412,12 +433,11 @@ class Zoho {
 
         for (let relatedModule of relatedModules) {
             if (module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
-            
-            
+
             relatedModuleParams["module"] = relatedModule.module;
             relatedModuleParams["has_subform"] = false;
             relatedModuleParams["page"] = 1;
-            
+
             let relatedModuleResult = await this.__getAllRecords(relatedModuleParams);
             if (relatedModuleResult.statusCode == 200) {
                 result["related_modules"].push({
@@ -605,7 +625,7 @@ class Zoho {
             return { error: true, error_details: error };
         }
     }
-    
+
     /**
      * Update a record of a module by its id
      * @param {String} module API name of the module

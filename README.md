@@ -123,3 +123,6 @@ if (result.statusCode == 200) {
 2. `getAllRecords` and `getRecordsModifiedAfter` 
 return related modules of type _multiselectlookup_. 
 To turn this off, set `params.fetch_related = false`
+3. subforms: To fectch `subforms` for all the data, use `has_subform: true`. 
+	To selecitvly get subform pass an object like this: `where_subform: {key1: value1, key2: value2 ...}`. This will be translated into
+	`(key1 == value1) && (key2 == value2)`

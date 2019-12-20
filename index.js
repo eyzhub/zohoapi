@@ -52,9 +52,11 @@ class Zoho {
      * Creates a client to communicate with zoho API.
      * @constructor
      */
-    constructor(params) {
-        if (params) module_options = params
-        this.records_batch_size = 5;
+    constructor(params = {}) {
+        // merge default options with params passed in initialization
+        module_options = Object.assign({
+            records_batch_size: 5
+        }, params)
     }
 
     async init() {
@@ -141,7 +143,7 @@ class Zoho {
         if (!params.module) {
             return { error: true };
         }
-        
+
         let page = params.page ? params.page : 1;
 
         if (whichPage) page = whichPage;
@@ -377,7 +379,7 @@ class Zoho {
         let allPromises = [];
         let resultData = { records: [], hasMore: true };
 
-        for (let i = startPage; i < startPage + this.records_batch_size; i++) {
+        for (let i = startPage; i < startPage + module_options.records_batch_size; i++) {
             let per_page = params.per_page ? params.per_page : 100;
             let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
             let sort_order = params.sort_order ? params.sort_order : "desc";
@@ -399,7 +401,7 @@ class Zoho {
                     let newResults = resultData.records;
                     newResults.push(...result.records);
                     resultData.records = newResults;
-                    resultData.startPage = startPage + this.records_batch_size;
+                    resultData.startPage = startPage + module_options.records_batch_size;
                 }
                 else resultData.hasMore = false;
             }
@@ -410,9 +412,9 @@ class Zoho {
     }
 
     /**
-     * Promise based approach - parallel calls in a batch are made to zoho. 
+     * Promise based approach - parallel calls in a batch are made to zoho.
      * See: batch size in the class constructor.
-     * @param {*} params 
+     * @param {*} params
      */
     async __getAllRecordsBatch(params) {
         if (module_options.debug) console.log('ZohoAPI __getAllRecords', JSON.stringify(params));
@@ -437,9 +439,9 @@ class Zoho {
     }
 
     /**
-     * Sequentially getRecords is called. If there aee 50 pages for a module, they are called 
+     * Sequentially getRecords is called. If there aee 50 pages for a module, they are called
      * one after the other.
-     * @param {*} params 
+     * @param {*} params
      */
     async __getAllRecordsSequential(params) {
         let page = 1;

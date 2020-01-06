@@ -733,6 +733,30 @@ class Zoho {
     }
 
     /**
+     * Update a records of a module by its id. 
+     * Please note: each object in data needs to have id: moduel_id
+     * @param {String} module API name of the module     
+     * @param {Array} data Array of objects, e.g. [{id: moduleEntryId, apiname:value, apiname2:value2, ...}]
+     * @returns {Object} response
+     */
+    async updateRecords(module, data) {
+        if (module_options.debug) console.log('ZohoAPI updateRecords', JSON.stringify(module));
+        var input = { module: module};
+        input.body = { data: data };
+
+        let client = await this.getClient();
+        return client.API.MODULES.put(input)
+            .then(function (response) {
+                if (response.body) return JSON.parse(response.body);
+                return {};
+            })
+            .catch(function (err) {
+                console.log(err)
+                return { error: err };
+            });
+    }
+
+    /**
      * Insert a record of a module by its id. The data object needs to an array
      *    with an object and it should have the mandatory Name field.
      * @param {String} module API name of the module

@@ -738,6 +738,7 @@ class Zoho {
      * @param {String} module API name of the module     
      * @param {Array} data Array of objects, e.g. [{id: moduleEntryId, apiname:value, apiname2:value2, ...}]
      * @returns {Object} response
+     * @returns {Object} response.data Array of responses for each record: contains status ('success' when record is updated) 
      */
     async updateRecords(module, data) {
         if (module_options.debug) console.log('ZohoAPI updateRecords', JSON.stringify(module));

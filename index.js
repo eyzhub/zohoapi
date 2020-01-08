@@ -733,28 +733,52 @@ class Zoho {
     }
 
     /**
-     * Update a records of a module by its id. 
+     * Update a records of a module by its id.
      * Please note: each object in data needs to have id: moduel_id
-     * @param {String} module API name of the module     
+     * @param {String} module API name of the module
      * @param {Array} data Array of objects, e.g. [{id: moduleEntryId, apiname:value, apiname2:value2, ...}]
      * @returns {Object} response
-     * @returns {Object} response.data Array of responses for each record: contains status ('success' when record is updated) 
+     * @returns {Object} response.data Array of responses for each record: contains status ('success' when record is updated)
      */
     async updateRecords(module, data) {
-        if (module_options.debug) console.log('ZohoAPI updateRecords', JSON.stringify(module));
-        var input = { module: module};
-        input.body = { data: data };
+       if (module_options.debug) console.log('ZohoAPI updateRecords', module, data.length);
 
         let client = await this.getClient();
-        return client.API.MODULES.put(input)
-            .then(function (response) {
-                if (response.body) return JSON.parse(response.body);
-                return {};
-            })
-            .catch(function (err) {
-                console.log(err)
-                return { error: err };
-            });
+
+        let per_page = 2
+        let allPromises = []
+
+        while (data.length > 0) {
+            let input = {
+                module: module,
+                body: {
+                    data: data.splice(0, per_page)
+                }
+            }
+            allPromises.push(
+                client.API.MODULES.put(input)
+            )
+        }
+
+        let resultData = { records: [], hasMore: true };
+
+        try {
+            let results = []
+            while (allPromises.length){
+                if (module_options.debug) console.log('ZohoAPI updateRecords put', allPromises.length, module_options.records_batch_size);
+                results.push( await Promise.all(allPromises.splice(0, module_options.records_batch_size)) )
+            }
+            results = results.flat()
+
+            return { data: results.map(result => {
+                if (result.statusCode == 200) return JSON.parse(result.body).data
+                return result
+            }).flat() }
+
+        } catch (error) {
+            if (module_options.debug) console.log('ZohoAPI updateRecords error', error);
+            return resultData;
+        }
     }
 
     /**

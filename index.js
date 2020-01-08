@@ -783,8 +783,7 @@ class Zoho {
         let resultData = { records: [], hasMore: true };
 
         try {
-            let results = []
-            console.log(`>> ${allPromises.length}`);
+            let results = []            
             while (allPromises.length){
                 if (module_options.debug) console.log('ZohoAPI updateRecords put', allPromises.length, module_options.records_batch_size);
                 results.push( await Promise.all(allPromises.splice(0, module_options.records_batch_size)) );

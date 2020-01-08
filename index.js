@@ -5,6 +5,26 @@ const request = require('request');
 
 const tokenGTimeDiff = 600000;
 
+
+/* 
+    Array.prototype.flat() function that is no available in older versions of Node.
+*/
+function flatten(input, depth=1) {
+    if (!input.length) return input;
+
+    let stack = [];
+
+    for (let item of input) {
+        if (item instanceof Array && depth > 0) {
+            stack = flatten(item, depth - 1);
+        } else {
+            stack.push(item);
+        }
+    }
+
+    return stack;
+}
+
 function requestPromise(options) {
     return new Promise(function (resolve, reject) {
         request(options, function (error, response, body) {
@@ -53,6 +73,7 @@ class Zoho {
      */
     constructor(params = {}) {
         // merge default options with params passed in initialization
+        if (params.debug) console.log('ZohoAPI constructor');
         this.module_options = Object.assign({
             records_batch_size: 5
         }, params)
@@ -282,7 +303,7 @@ class Zoho {
     }
 
     async __getRecordsModifiedAfter(params) {
-        if (this.module_options.debug) console.log('ZohoAPI getRecordsModifiedAfter', JSON.stringify(params));
+        if (this.module_options.debug) console.log('ZohoAPI __getRecordsModifiedAfter', JSON.stringify(params));
         if (!params.module) {
             return { error: true };
         }
@@ -745,6 +766,62 @@ class Zoho {
                 console.log(err)
                 return { error: err };
             });
+    }
+
+    /**
+     * Update records of a module by its id.
+     * Please note: each object in data needs to have id: module_id
+     * @param {String} module API name of the module
+     * @param {Array} data Array of objects, e.g. [{id: moduleEntryId, apiname:value, apiname2:value2, ...}]
+     * @returns {Object} response
+     * @returns {Object} response.data Array of responses for each record: contains status ('success' when record is updated)
+     */
+    async updateRecords(module, data) {
+       if (module_options.debug) console.log('ZohoAPI updateRecords', module, data.length);
+
+        let client = await this.getClient();
+
+        let per_page = 200
+        let allPromises = []
+
+        while (data.length > 0) {
+            let input = {
+                module: module,
+                body: {
+                    data: data.splice(0, per_page)
+                }
+            }
+            allPromises.push(
+                client.API.MODULES.put(input)
+            )
+        }
+
+        let resultData = { records: [], hasMore: true };
+
+        try {
+            let results = []            
+            while (allPromises.length){
+                if (module_options.debug) console.log('ZohoAPI updateRecords put', allPromises.length, module_options.records_batch_size);
+                results.push( await Promise.all(allPromises.splice(0, module_options.records_batch_size)) );
+            }
+
+            results = flatten(results);
+
+            let parsedResult = results.map(result => {
+                // if all updates succeed, statusCode = 200. 
+                // statusCode != 200 even if one update fails.
+                if (result.body) {
+                    let resultBody = JSON.parse(result.body);
+                    return resultBody.data ? resultBody.data : result;
+                }
+                return result;                
+            });
+
+            return { data: flatten(parsedResult) };
+        } catch (error) {
+            if (module_options.debug) console.log('ZohoAPI updateRecords error', error);
+            return resultData;
+        }
     }
 
     /**

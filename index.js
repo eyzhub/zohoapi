@@ -6,6 +6,26 @@ let module_options = {};
 
 const tokenGTimeDiff = 600000;
 
+
+/* 
+    Array.prototype.flat() function that is no available in older versions of Node.
+*/
+function flatten(input, depth=1) {
+    if (!input.length) return input;
+
+    let stack = [];
+
+    for (let item of input) {
+        if (item instanceof Array && depth > 0) {
+            stack = flatten(item, depth - 1);
+        } else {
+            stack.push(item);
+        }
+    }
+
+    return stack;
+}
+
 function requestPromise(options) {
     return new Promise(function (resolve, reject) {
         request(options, function (error, response, body) {
@@ -733,8 +753,8 @@ class Zoho {
     }
 
     /**
-     * Update a records of a module by its id.
-     * Please note: each object in data needs to have id: moduel_id
+     * Update records of a module by its id.
+     * Please note: each object in data needs to have id: module_id
      * @param {String} module API name of the module
      * @param {Array} data Array of objects, e.g. [{id: moduleEntryId, apiname:value, apiname2:value2, ...}]
      * @returns {Object} response
@@ -764,17 +784,25 @@ class Zoho {
 
         try {
             let results = []
+            console.log(`>> ${allPromises.length}`);
             while (allPromises.length){
                 if (module_options.debug) console.log('ZohoAPI updateRecords put', allPromises.length, module_options.records_batch_size);
-                results.push( await Promise.all(allPromises.splice(0, module_options.records_batch_size)) )
+                results.push( await Promise.all(allPromises.splice(0, module_options.records_batch_size)) );
             }
-            results = results.flat()
 
-            return { data: results.map(result => {
-                if (result.statusCode == 200) return JSON.parse(result.body).data
-                return result
-            }).flat() }
+            results = flatten(results);
 
+            let parsedResult = results.map(result => {
+                // if all updates succeed, statusCode = 200. 
+                // statusCode != 200 even if one update fails.
+                if (result.body) {
+                    let resultBody = JSON.parse(result.body);
+                    return resultBody.data ? resultBody.data : result;
+                }
+                return result;                
+            });
+
+            return { data: flatten(parsedResult) };
         } catch (error) {
             if (module_options.debug) console.log('ZohoAPI updateRecords error', error);
             return resultData;

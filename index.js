@@ -74,6 +74,7 @@ class Zoho {
      */
     constructor(params = {}) {
         // merge default options with params passed in initialization
+        if (params.debug) console.log('ZohoAPI constructor');
         module_options = Object.assign({
             records_batch_size: 5
         }, params)
@@ -287,7 +288,7 @@ class Zoho {
     }
 
     async __getRecordsModifiedAfter(params) {
-        if (module_options.debug) console.log('ZohoAPI getRecordsModifiedAfter', JSON.stringify(params));
+        if (module_options.debug) console.log('ZohoAPI __getRecordsModifiedAfter', JSON.stringify(params));
         if (!params.module) {
             return { error: true };
         }

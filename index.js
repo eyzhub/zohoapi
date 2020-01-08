@@ -745,7 +745,7 @@ class Zoho {
 
         let client = await this.getClient();
 
-        let per_page = 2
+        let per_page = 200
         let allPromises = []
 
         while (data.length > 0) {

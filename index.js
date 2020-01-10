@@ -402,6 +402,7 @@ class Zoho {
             if (!relatedModuleResult.error) {
                 result["related_modules"].push({
                     "module": relatedModule.module,
+                    "api_name": relatedModule.api_name,
                     "records": relatedModuleResult.records
                 });
             }
@@ -560,6 +561,7 @@ class Zoho {
             if (relatedModuleResult.statusCode == 200) {
                 result["related_modules"].push({
                     "module": relatedModule.module,
+                    "api_name": relatedModule.api_name,
                     "records": relatedModuleResult.records
                 });
             }

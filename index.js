@@ -328,7 +328,7 @@ class Zoho {
 
                 let response = await zoho.getRecords(params);
 
-                if (!response.records) hasMore = false;
+                if (!response.records.length) hasMore = false;
                 else {
                     let data = response.records;
 
@@ -402,6 +402,7 @@ class Zoho {
             if (!relatedModuleResult.error) {
                 result["related_modules"].push({
                     "module": relatedModule.module,
+                    "api_name": relatedModule.api_name,
                     "records": relatedModuleResult.records
                 });
             }
@@ -494,7 +495,7 @@ class Zoho {
                 Object.assign(params, tempParams);
 
                 let response = await this.getRecords(params);
-                if (response.records) {
+                if (response.records && response.records.length) {
                     if (response.records.length > 0) resultData.push(...response.records);
                     else hasMore = false;
                 } else {
@@ -560,6 +561,7 @@ class Zoho {
             if (relatedModuleResult.statusCode == 200) {
                 result["related_modules"].push({
                     "module": relatedModule.module,
+                    "api_name": relatedModule.api_name,
                     "records": relatedModuleResult.records
                 });
             }

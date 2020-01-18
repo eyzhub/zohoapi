@@ -779,7 +779,7 @@ class Zoho {
      * @returns {Object} response.data Array of responses for each record: contains status ('success' when record is updated)
      */
     async updateRecords(module, data) {
-       if (module_options.debug) console.log('ZohoAPI updateRecords', module, data.length);
+       if (this.module_options.debug) console.log('ZohoAPI updateRecords', module, data.length);
 
         let client = await this.getClient();
 
@@ -803,8 +803,8 @@ class Zoho {
         try {
             let results = []            
             while (allPromises.length){
-                if (module_options.debug) console.log('ZohoAPI updateRecords put', allPromises.length, module_options.records_batch_size);
-                results.push( await Promise.all(allPromises.splice(0, module_options.records_batch_size)) );
+                if (this.module_options.debug) console.log('ZohoAPI updateRecords put', allPromises.length, this.module_options.records_batch_size);
+                results.push( await Promise.all(allPromises.splice(0, this.module_options.records_batch_size)) );
             }
 
             results = flatten(results);
@@ -821,7 +821,7 @@ class Zoho {
 
             return { data: flatten(parsedResult) };
         } catch (error) {
-            if (module_options.debug) console.log('ZohoAPI updateRecords error', error);
+            if (this.module_options.debug) console.log('ZohoAPI updateRecords error', error);
             return resultData;
         }
     }

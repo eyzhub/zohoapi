@@ -2,6 +2,7 @@
 var zcrmsdk = require("zcrmsdk");
 const s3Tokens = require("./token_mgmt");
 const request = require('request');
+const snappy = require('snappy');
 
 const tokenGTimeDiff = 600000;
 
@@ -64,6 +65,16 @@ async function __getFromZoho(url) {
 
     return requestPromise(options);
 }
+
+function gcnow() {
+    try {
+      if (global.gc) {global.gc();}
+    } catch (e) {
+      console.warn('### No GC hook! Start your program as `node --expose-gc file.js`###');
+      // process.exit();
+    }
+}
+
 
 /** Zoho class with utility functions */
 class Zoho {
@@ -194,19 +205,29 @@ class Zoho {
 
                 if (this.module_options.cache && this.module_options.cache.hasOwnProperty( cache_key )) {
                     response = this.module_options.cache[cache_key]
+                    if (this.module_options.compress) {
+                        if (this.module_options.debug) console.log('ZohoAPI Uncompress');
+                        response.body = snappy.uncompressSync(response.body, { asBuffer: false })
+                    }
                     if (this.module_options.debug) console.log('ZohoAPI getRecords | CACHED loaded', cache_key);
                 }
 
                 if (!response) {
                     response = await client.API.MODULES.get(input);
-                    if (this.module_options.cache) this.module_options.cache[cache_key] = response
+                    if (this.module_options.cache) {
+                        this.module_options.cache[cache_key] = response
+                        if (this.module_options.compress) {
+                            if (this.module_options.debug) console.log('ZohoAPI Compress');
+                            this.module_options.cache[cache_key].body = snappy.compressSync(this.module_options.cache[cache_key].body)
+                        }
+                    }
                 }
 
                 if (response.statusCode != 200) {
                     return { records: [], statusCode: response.statusCode, info: null };
                 }
-                let jsonResponse = JSON.parse(response.body);
-                return { records: jsonResponse.data, statusCode: response.statusCode, info: jsonResponse.info };
+                response.body = JSON.parse(response.body);
+                return { statusCode: response.statusCode, info: response.body.info, records: response.body.data };
             } catch (error) {
                 return { error: true, error_details: error, statusCode: 500 };
             }
@@ -459,9 +480,9 @@ class Zoho {
         let startPage = 1;
         let records = [];
 
-
+        let resultData = null
         while (hasMore) {
-            let resultData = await this.__getRecordsBatch(params, startPage);
+            resultData = await this.__getRecordsBatch(params, startPage);
 
             if (resultData.hasMore) {
                 startPage = resultData.startPage;
@@ -471,6 +492,8 @@ class Zoho {
 
             records.push(...resultData.records);
         }
+        resultData = null
+        gcnow()
 
         return { records: records, count: records.length, statusCode: 200 };
     }

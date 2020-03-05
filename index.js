@@ -493,7 +493,7 @@ class Zoho {
             records.push(...resultData.records);
         }
         resultData = null
-        gcnow()
+        if (this.module_options.gc) gcnow()
 
         return { records: records, count: records.length, statusCode: 200 };
     }

@@ -43,6 +43,7 @@ Zoho = require("zohoapi");
 zoho =  new Zoho(); // optional enable debug messages | new Zoho( { debug: true } );
 					// optional parallel execution | new Zoho( { records_batch_size: 5 } );
 					// optional cache repeating calls | new Zoho( { cache: {} } );
+					// trigger garbage collector and compress cache | new Zoho( { cache: {}, compress: true, gc: true } );
 ```
 
 1. Fetch records

@@ -1,6 +1,6 @@
 {
   "name": "zohoapi",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Zoho Utility functions like s3 based token management, module level operations ",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,7 @@
   "dependencies": {
     "aws-sdk": "^2.503.0",
     "dotenv": "^8.0.0",
+    "snappy": "^6.2.3",
     "zcrmsdk": "0.0.15"
   },
   "keywords": [

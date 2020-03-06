@@ -207,7 +207,7 @@ class Zoho {
                     response = this.module_options.cache[cache_key]
                     if (this.module_options.compress) {
                         if (this.module_options.debug) console.log('ZohoAPI Uncompress');
-                        response.body = snappy.uncompressSync(response.body, { asBuffer: false })
+                        if (response.body) response.body = snappy.uncompressSync(response.body, { asBuffer: false })
                     }
                     if (this.module_options.debug) console.log('ZohoAPI getRecords | CACHED loaded', cache_key);
                 }
@@ -218,7 +218,7 @@ class Zoho {
                         this.module_options.cache[cache_key] = response
                         if (this.module_options.compress) {
                             if (this.module_options.debug) console.log('ZohoAPI Compress');
-                            this.module_options.cache[cache_key].body = snappy.compressSync(this.module_options.cache[cache_key].body)
+                            if (this.module_options.cache[cache_key].body) this.module_options.cache[cache_key].body = snappy.compressSync(this.module_options.cache[cache_key].body)
                         }
                     }
                 }

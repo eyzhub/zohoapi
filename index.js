@@ -203,32 +203,35 @@ class Zoho {
             try {
                 let cache_key = input.module+input.params.page
 
+                /* cache available, return data from memory */
                 if (this.module_options.cache && this.module_options.cache.hasOwnProperty( cache_key )) {
                     response = this.module_options.cache[cache_key]
+                    if (this.module_options.debug) console.log('ZohoAPI getRecords | CACHED loaded', cache_key, response.statusCode, (response.body) ? response.body.data.length : '');
                     if (this.module_options.compress) {
-                        if (this.module_options.debug) console.log('ZohoAPI Uncompress');
-                        if (response.body) response.body = snappy.uncompressSync(response.body, { asBuffer: false })
+                        if (this.module_options.debug) console.log('ZohoAPI getRecords Uncompress');
+                        if (response instanceof Buffer) response = JSON.parse(snappy.uncompressSync(response, { asBuffer: false }))
                     }
-                    if (this.module_options.debug) console.log('ZohoAPI getRecords | CACHED loaded', cache_key);
                 }
-
+                /* no cache available, fetch data from zoho */
                 if (!response) {
                     response = await client.API.MODULES.get(input);
+                    if (response.hasOwnProperty('body') && (typeof response.body === 'string' || response.body instanceof String)) response.body = JSON.parse(response.body);
                     if (this.module_options.cache) {
                         this.module_options.cache[cache_key] = response
+                        if (this.module_options.debug) console.log('ZohoAPI getRecords', cache_key, response.statusCode);
                         if (this.module_options.compress) {
-                            if (this.module_options.debug) console.log('ZohoAPI Compress');
-                            if (this.module_options.cache[cache_key].body) this.module_options.cache[cache_key].body = snappy.compressSync(this.module_options.cache[cache_key].body)
+                            if (this.module_options.debug) console.log('ZohoAPI getRecords Compress');
+                            this.module_options.cache[cache_key] = snappy.compressSync(JSON.stringify(this.module_options.cache[cache_key]))
                         }
                     }
                 }
 
-                if (response.statusCode != 200) {
-                    return { records: [], statusCode: response.statusCode, info: null };
-                }
-                response.body = JSON.parse(response.body);
+                /* invalid data */
+                if (response.statusCode != 200) return { records: [], statusCode: response.statusCode || response.status_code, info: null };
+
                 return { statusCode: response.statusCode, info: response.body.info, records: response.body.data };
             } catch (error) {
+                console.log('ZohoAPI getRecords ERROR', error)
                 return { error: true, error_details: error, statusCode: 500 };
             }
         }
@@ -465,6 +468,7 @@ class Zoho {
             }
             return resultData;
         } catch (error) {
+            console.log('ZohoAPI __getRecordsBatch ERROR', error)
             return resultData;
         }
     }

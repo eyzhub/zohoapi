@@ -327,7 +327,7 @@ class Zoho {
     }
 
     async __getRecordsModifiedAfter(params) {
-        // if (this.module_options.debug) console.log('ZohoAPI __getRecordsModifiedAfter', JSON.stringify(params));
+        if (this.module_options.debug) console.log('ZohoAPI __getRecordsModifiedAfter', JSON.stringify(params));
         if (!params.module) {
             return { error: true };
         }
@@ -351,9 +351,6 @@ class Zoho {
                 Object.assign(params, tempParams);
 
                 let response = await zoho.getRecords(params);
-                if (this.module_options.debug) {
-                    console.log('ZohoAPI __getRecordsModifiedAfter', JSON.stringify(params));
-                }
 
                 if (!response.records.length) hasMore = false;
                 else {
@@ -403,13 +400,7 @@ class Zoho {
 
         if (!modifiedAfter) return { error: true, records: null };
 
-        let result;
-        try {
-            result = await this.__getRecordsModifiedAfter(params);    
-        } catch (error) {
-            console.log(error);
-            return { error: true, count: 0, error_details: error }; 
-        }        
+        let result = await this.__getRecordsModifiedAfter(params);
 
         if (result.error) return result;
 

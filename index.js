@@ -350,7 +350,7 @@ class Zoho {
                 let tempParams = { page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order };
                 Object.assign(params, tempParams);
 
-                let response = await zoho.getRecords(params);
+                let response = await zoho.getRecords(params, page);
                 if (this.module_options.debug) {
                     console.log('ZohoAPI __getRecordsModifiedAfter', JSON.stringify(params));
                 }

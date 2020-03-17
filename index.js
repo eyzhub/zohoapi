@@ -327,7 +327,7 @@ class Zoho {
     }
 
     async __getRecordsModifiedAfter(params) {
-        // if (this.module_options.debug) console.log('ZohoAPI __getRecordsModifiedAfter', JSON.stringify(params));
+        if (this.module_options.debug) console.log('ZohoAPI __getRecordsModifiedAfter', JSON.stringify(params));
         if (!params.module) {
             return { error: true };
         }
@@ -371,6 +371,7 @@ class Zoho {
                 page++;
             } catch (err) {
                 hasMore = false;
+                if (this.module_options.debug) console.log('ZohoAPI __getRecordsModifiedAfter ERROR', JSON.stringify(err));
                 return { error: true, count: 0, error_details: err };
             }
         }
@@ -405,11 +406,11 @@ class Zoho {
 
         let result;
         try {
-            result = await this.__getRecordsModifiedAfter(params);    
+            result = await this.__getRecordsModifiedAfter(params);
         } catch (error) {
             console.log(error);
-            return { error: true, count: 0, error_details: error }; 
-        }        
+            return { error: true, count: 0, error_details: error };
+        }
 
         if (result.error) return result;
 
@@ -420,28 +421,33 @@ class Zoho {
 
         result["related_modules"] = [];
 
-        let relatedModules = await this.getMultiLookupFields(params.module);
+        try {
+            let relatedModules = await this.getMultiLookupFields(params.module);
 
-        for (let relatedModule of relatedModules) {
-            if (this.module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
+            for (let relatedModule of relatedModules) {
+                if (this.module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
 
-            let relatedModuleRParams = params;
-            relatedModuleRParams["module"] = relatedModule.module;
-            relatedModuleRParams["has_subform"] = false;
-            relatedModuleRParams["page"] = 1;
+                let relatedModuleRParams = params;
+                relatedModuleRParams["module"] = relatedModule.module;
+                relatedModuleRParams["has_subform"] = false;
+                relatedModuleRParams["page"] = 1;
 
-            let relatedModuleResult = await this.__getRecordsModifiedAfter(relatedModuleRParams);
-            // console.log(relatedModuleResult);
-            if (!relatedModuleResult.error) {
-                result["related_modules"].push({
-                    "module": relatedModule.module,
-                    "api_name": relatedModule.api_name,
-                    "records": relatedModuleResult.records
-                });
+                let relatedModuleResult = await this.__getRecordsModifiedAfter(relatedModuleRParams);
+                // console.log(relatedModuleResult);
+                if (!relatedModuleResult.error) {
+                    result["related_modules"].push({
+                        "module": relatedModule.module,
+                        "api_name": relatedModule.api_name,
+                        "records": relatedModuleResult.records
+                    });
+                }
             }
-        }
 
-        return result;
+            return result;
+        } catch (e) {
+            if (this.module_options.debug) console.log('ZohoAPI getRecordsModifiedAfter ERROR', JSON.stringify(e));
+            return result;
+        }
     }
 
 

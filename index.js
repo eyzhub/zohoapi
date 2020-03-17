@@ -195,7 +195,10 @@ class Zoho {
 
         let subformCondition = (params.has_subform || params.where_subform);
 
-        if (this.module_options.debug) console.log('ZohoAPI getRecords', JSON.stringify(params));
+        if (this.module_options.debug) {
+            console.log('ZohoAPI getRecords', JSON.stringify(params));
+            console.log('ZohoAPI getRecords - input', JSON.stringify(input));
+        }        
 
         let client = await this.getClient();
 
@@ -350,7 +353,7 @@ class Zoho {
                 let tempParams = { page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order };
                 Object.assign(params, tempParams);
 
-                let response = await zoho.getRecords(params, page);
+                let response = await this.getRecords(params, page);
                 if (this.module_options.debug) {
                     console.log('ZohoAPI __getRecordsModifiedAfter', JSON.stringify(params));
                 }

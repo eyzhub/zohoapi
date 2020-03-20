@@ -195,10 +195,7 @@ class Zoho {
 
         let subformCondition = (params.has_subform || params.where_subform);
 
-        if (this.module_options.debug) {
-            console.log('ZohoAPI getRecords', JSON.stringify(params));
-            console.log('ZohoAPI getRecords - input', JSON.stringify(input));
-        }        
+        if (this.module_options.debug) console.log('ZohoAPI getRecords', JSON.stringify(input));
 
         let client = await this.getClient();
 

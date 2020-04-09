@@ -111,7 +111,7 @@ class Zoho {
 
         let tokenObj = await s3Tokens.getOAuthTokens();
         let expirytime = tokenObj.expires_in;
-        console.log(expirytime);
+        
         let refreshToken = tokenObj.refresh_token;
         let ts = Math.round((new Date()).getTime());
 

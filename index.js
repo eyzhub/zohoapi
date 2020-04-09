@@ -104,9 +104,9 @@ class Zoho {
 
     async getClient(generate = false) {
         let zohoConfig = {
-            'client_id': process.env.CLIENT_ID,
-            'client_secret': process.env.CLIENT_SECRET,
-            'redirect_url': process.env.REDIRECT_URL,
+            'client_id': process.env.CRM_CLIENT_ID,
+            'client_secret': process.env.CRM_CLIENT_SECRET,
+            'redirect_url': process.env.CRM_REDIRECT_URL,
         };
 
         let tokenObj = await s3Tokens.getOAuthTokens();

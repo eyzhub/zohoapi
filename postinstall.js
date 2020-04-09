@@ -25,9 +25,9 @@ const createEnv = async (dir) => {
 		envContent += `SECRET_ACCESS_KEY_ID=${process.env.SECRET_ACCESS_KEY_ID}\n`;
 		envContent += `S3_BUCKET=${process.env.S3_BUCKET}\n`;
 		envContent += `S3_KEY=zoho_token.json\n`;
-		envContent += `CLIENT_ID=${process.env.CLIENT_ID}\n`;
-		envContent += `CLIENT_SECRET=${process.env.CLIENT_SECRET}\n`;
-		envContent += `REDIRECT_URL=${process.env.REDIRECT_URL}\n`;
+		envContent += `CRM_CLIENT_ID=${process.env.CRM_CLIENT_ID}\n`;
+		envContent += `CRM_CLIENT_SECRET=${process.env.CRM_CLIENT_SECRET}\n`;
+		envContent += `CRM_REDIRECT_URL=${process.env.CRM_REDIRECT_URL}\n`;
 
 		fs.writeFile(dir, envContent, (err) => {
 			if (err) {

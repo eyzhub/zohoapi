@@ -1,6 +1,6 @@
 {
   "name": "zohoapi",
-  "version": "1.6.3",
+  "version": "1.7.0",
   "description": "Zoho Utility functions like s3 based token management, module level operations ",
   "main": "index.js",
   "scripts": {
@@ -15,10 +15,10 @@
     "aws-sdk": "^2.503.0",
     "dotenv": "^8.0.0",
     "snappy": "^6.2.3",
-    "zcrmsdk": "0.0.20"
+    "zcrmsdk": "git+https://github.com/dseeker/zcrm-nodejs-sdk.git"
   },
   "disabled_dependencies": {
-    "zcrmsdk": "git+https://github.com/dseeker/zcrm-nodejs-sdk.git"
+    "zcrmsdk": "0.0.20"
   },
   "keywords": [
     "zoho",

@@ -20,11 +20,14 @@ const createResourcesDir = async (dir) => {
 
 const createEnv = async (dir) => {
 	if (!checkPathExists(dir)) {
-		let envContent = 'NODE_ENV=development\n'
-		envContent += `AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID}\n`
-		envContent += `SECRET_ACCESS_KEY_ID=${process.env.SECRET_ACCESS_KEY_ID}\n`
-		envContent += `S3_BUCKET=${process.env.S3_BUCKET}\n`
-		envContent += `S3_KEY=zoho_token.json`
+		let envContent = 'NODE_ENV=development\n';
+		envContent += `AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID}\n`;
+		envContent += `SECRET_ACCESS_KEY_ID=${process.env.SECRET_ACCESS_KEY_ID}\n`;
+		envContent += `S3_BUCKET=${process.env.S3_BUCKET}\n`;
+		envContent += `S3_KEY=zoho_token.json\n`;
+		envContent += `CLIENT_ID=${process.env.CLIENT_ID}\n`;
+		envContent += `CLIENT_SECRET=${process.env.CLIENT_SECRET}\n`;
+		envContent += `REDIRECT_URL=${process.env.REDIRECT_URL}\n`;
 
 		fs.writeFile(dir, envContent, (err) => {
 			if (err) {
@@ -58,11 +61,11 @@ const createOauthProperties = async (dir) => {
 	let oauthConfigurationPropertiesPath = path.join(dir, "oauth_configuration.properties");
 
 	if (!checkPathExists(oauthConfigurationPropertiesPath)) {
-		let oauthConfigurationPropertiesContent = '[zoho]\n'
-		oauthConfigurationPropertiesContent += 'crm.iamurl=accounts.zoho.com\n'
-		oauthConfigurationPropertiesContent += `crm.clientid=${process.env.crm_clientid}\n`
-		oauthConfigurationPropertiesContent += `crm.clientsecret=${process.env.crm_clientsecret}\n`
-		oauthConfigurationPropertiesContent += `crm.redirecturl=${process.env.crm_redirecturl}\n`
+		let oauthConfigurationPropertiesContent = '[zoho]\n';
+		oauthConfigurationPropertiesContent += 'crm.iamurl=accounts.zoho.com\n';
+		oauthConfigurationPropertiesContent += `crm.clientid=${process.env.crm_clientid}\n`;
+		oauthConfigurationPropertiesContent += `crm.clientsecret=${process.env.crm_clientsecret}\n`;
+		oauthConfigurationPropertiesContent += `crm.redirecturl=${process.env.crm_redirecturl}\n`;
 
 		fs.writeFile(
 			oauthConfigurationPropertiesPath,

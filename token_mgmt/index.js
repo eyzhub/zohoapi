@@ -49,16 +49,8 @@ exports.getOAuthTokens = async (userIdentifier) => {
 	let token = JSON.parse(tokenBody.Body.toString());
 
 	//console.log(`token will expire at ${token.expires_in}`);
-	var result = {};
 
 	return new Promise(function(resolve, reject) {
-		result.accesstoken = token.access_token;
-		result.expirytime = token.expires_in; //+ expiryInterval;
-		result.refreshtoken = token.refresh_token;
-
-		var result_array = [];
-		result_array.push(result);
-
-		resolve(result_array);
+		resolve(token);
 	});
 };

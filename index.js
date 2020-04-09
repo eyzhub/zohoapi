@@ -4,6 +4,10 @@ const s3Tokens = require("./token_mgmt");
 const request = require('request');
 const snappy = require('snappy');
 
+const dotenv = require("dotenv");
+dotenv.config();
+
+
 const tokenGTimeDiff = 600000;
 
 
@@ -53,7 +57,7 @@ function execShellCommand(cmd) {
 
 async function __getFromZoho(url) {
     let tokenObj = await s3Tokens.getOAuthTokens();
-    let accessToken = tokenObj[0].accesstoken;
+    let accessToken = tokenObj.access_token;
 
     var options = {
         method: 'get',
@@ -99,15 +103,22 @@ class Zoho {
     }
 
     async getClient(generate = false) {
-        let tokenObj = await s3Tokens.getOAuthTokens();
-        let expirytime = tokenObj[0].expirytime;
-        let refreshToken = tokenObj[0].refreshtoken;
-        var ts = Math.round((new Date()).getTime());
+        let zohoConfig = {
+            'client_id': process.env.CLIENT_ID,
+            'client_secret': process.env.CLIENT_SECRET,
+            'redirect_url': process.env.REDIRECT_URL,
+        };
 
-        if (!this.client) await zcrmsdk.initialize();
+        let tokenObj = await s3Tokens.getOAuthTokens();
+        let expirytime = tokenObj.expires_in;
+        console.log(expirytime);
+        let refreshToken = tokenObj.refresh_token;
+        let ts = Math.round((new Date()).getTime());
+
+        if (!this.client) await zcrmsdk.initialize(zohoConfig);
         let toInit = ts >= (expirytime - tokenGTimeDiff);
 
-        if (toInit) await zcrmsdk.initialize();
+        if (toInit) await zcrmsdk.initialize(zohoConfig);
 
         this.client = zcrmsdk;
 
@@ -205,7 +216,7 @@ class Zoho {
 
                 /* cache available, return data from memory */
                 if (this.module_options.cache && this.module_options.cache.hasOwnProperty( cache_key )) {
-                    response = this.module_options.cache[cache_key]
+                    response = this.module_options.cache[cache_key];
                     if (this.module_options.debug) console.log('ZohoAPI getRecords | CACHED loaded', cache_key, response.statusCode, (response.body) ? response.body.data.length : '');
                     if (this.module_options.compress) {
                         if (this.module_options.debug) console.log('ZohoAPI getRecords Uncompress');
@@ -304,7 +315,7 @@ class Zoho {
                 if (this.module_options.debug) console.log('ZohoAPI getMultiLookupFields', response);
 
                 let tokenObj = await s3Tokens.getOAuthTokens();
-                let expirytime = tokenObj[0].expirytime;
+                let expirytime = tokenObj.expires_in;
                 var d2 = new Date(expirytime);
                 var d3 = new Date(expirytime - 60000);
 
@@ -483,7 +494,7 @@ class Zoho {
             }
             return resultData;
         } catch (error) {
-            console.log('ZohoAPI __getRecordsBatch ERROR', error)
+            console.log('ZohoAPI __getRecordsBatch ERROR', error);
             return resultData;
         }
     }
@@ -499,7 +510,7 @@ class Zoho {
         let startPage = 1;
         let records = [];
 
-        let resultData = null
+        let resultData = null;
         while (hasMore) {
             resultData = await this.__getRecordsBatch(params, startPage);
 
@@ -620,7 +631,7 @@ class Zoho {
         let url = `https://www.zohoapis.com/crm/bulk/v2/read/${id}`;
 
         let tokenObj = await s3Tokens.getOAuthTokens();
-        let accessToken = tokenObj[0].accesstoken;
+        let accessToken = tokenObj.accesstoken;
 
         let options = {
             method: 'get',
@@ -652,7 +663,7 @@ class Zoho {
         await this.getClient(true);
 
         let tokenObj = await s3Tokens.getOAuthTokens();
-        let accessToken = tokenObj[0].accesstoken;
+        let accessToken = tokenObj.accesstoken;
 
         let url = "https://www.zohoapis.com/crm/bulk/v2/read";
         let jsonBody = { query: { module: module } };
@@ -686,7 +697,7 @@ class Zoho {
         await this.getClient();
 
         let tokenObj = await s3Tokens.getOAuthTokens();
-        let accessToken = tokenObj[0].accesstoken;
+        let accessToken = tokenObj.access_token;
         // console.log(accessToken);
 
         let url = `https://www.zohoapis.com/crm/bulk/v2/read/${jobId}/result`;
@@ -843,7 +854,7 @@ class Zoho {
         let resultData = { records: [], hasMore: true };
 
         try {
-            let results = []            
+            let results = [];
             while (allPromises.length){
                 if (this.module_options.debug) console.log('ZohoAPI updateRecords put', allPromises.length, this.module_options.records_batch_size);
                 results.push( await Promise.all(allPromises.splice(0, this.module_options.records_batch_size)) );
@@ -879,7 +890,7 @@ class Zoho {
      */
     async insertRecord(module, data) {
         if (this.module_options.debug) console.log('ZohoAPI insertRecord', JSON.stringify(module));
-        var input = { module: module };
+        let input = { module: module };
         input.body = { data: data };
 
         let client = await this.getClient();

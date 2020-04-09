@@ -15,10 +15,10 @@
     "aws-sdk": "^2.503.0",
     "dotenv": "^8.0.0",
     "snappy": "^6.2.3",
-    "zcrmsdk": "git+https://github.com/dseeker/zcrm-nodejs-sdk.git"
+    "zcrmsdk": "0.0.15"
   },
   "disabled_dependencies": {
-    "zcrmsdk": "0.0.15"
+    "zcrmsdk": "git+https://github.com/dseeker/zcrm-nodejs-sdk.git"
   },
   "keywords": [
     "zoho",

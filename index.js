@@ -195,7 +195,7 @@ class Zoho {
 
         let subformCondition = (params.has_subform || params.where_subform);
 
-        if (this.module_options.debug) console.log('ZohoAPI getRecords', JSON.stringify(params));
+        if (this.module_options.debug) console.log('ZohoAPI getRecords', JSON.stringify(input));
 
         let client = await this.getClient();
 
@@ -203,32 +203,35 @@ class Zoho {
             try {
                 let cache_key = input.module+input.params.page
 
+                /* cache available, return data from memory */
                 if (this.module_options.cache && this.module_options.cache.hasOwnProperty( cache_key )) {
                     response = this.module_options.cache[cache_key]
+                    if (this.module_options.debug) console.log('ZohoAPI getRecords | CACHED loaded', cache_key, response.statusCode, (response.body) ? response.body.data.length : '');
                     if (this.module_options.compress) {
-                        if (this.module_options.debug) console.log('ZohoAPI Uncompress');
-                        if (response.body) response.body = snappy.uncompressSync(response.body, { asBuffer: false })
+                        if (this.module_options.debug) console.log('ZohoAPI getRecords Uncompress');
+                        if (response instanceof Buffer) response = JSON.parse(snappy.uncompressSync(response, { asBuffer: false }))
                     }
-                    if (this.module_options.debug) console.log('ZohoAPI getRecords | CACHED loaded', cache_key);
                 }
-
+                /* no cache available, fetch data from zoho */
                 if (!response) {
                     response = await client.API.MODULES.get(input);
+                    if (response.hasOwnProperty('body') && (typeof response.body === 'string' || response.body instanceof String)) response.body = JSON.parse(response.body);
                     if (this.module_options.cache) {
                         this.module_options.cache[cache_key] = response
+                        if (this.module_options.debug) console.log('ZohoAPI getRecords', cache_key, response.statusCode);
                         if (this.module_options.compress) {
-                            if (this.module_options.debug) console.log('ZohoAPI Compress');
-                            if (this.module_options.cache[cache_key].body) this.module_options.cache[cache_key].body = snappy.compressSync(this.module_options.cache[cache_key].body)
+                            if (this.module_options.debug) console.log('ZohoAPI getRecords Compress');
+                            this.module_options.cache[cache_key] = snappy.compressSync(JSON.stringify(this.module_options.cache[cache_key]))
                         }
                     }
                 }
 
-                if (response.statusCode != 200) {
-                    return { records: [], statusCode: response.statusCode, info: null };
-                }
-                response.body = JSON.parse(response.body);
+                /* invalid data */
+                if (response.statusCode != 200) return { records: [], statusCode: response.statusCode || response.status_code, info: null };
+
                 return { statusCode: response.statusCode, info: response.body.info, records: response.body.data };
             } catch (error) {
+                console.log('ZohoAPI getRecords ERROR', error)
                 return { error: true, error_details: error, statusCode: 500 };
             }
         }
@@ -347,7 +350,10 @@ class Zoho {
                 let tempParams = { page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order };
                 Object.assign(params, tempParams);
 
-                let response = await zoho.getRecords(params);
+                let response = await this.getRecords(params, page);
+                if (this.module_options.debug) {
+                    console.log('ZohoAPI __getRecordsModifiedAfter', JSON.stringify(params));
+                }
 
                 if (!response.records.length) hasMore = false;
                 else {
@@ -365,6 +371,7 @@ class Zoho {
                 page++;
             } catch (err) {
                 hasMore = false;
+                if (this.module_options.debug) console.log('ZohoAPI __getRecordsModifiedAfter ERROR', JSON.stringify(err));
                 return { error: true, count: 0, error_details: err };
             }
         }
@@ -397,7 +404,13 @@ class Zoho {
 
         if (!modifiedAfter) return { error: true, records: null };
 
-        let result = await this.__getRecordsModifiedAfter(params);
+        let result;
+        try {
+            result = await this.__getRecordsModifiedAfter(params);
+        } catch (error) {
+            console.log(error);
+            return { error: true, count: 0, error_details: error };
+        }
 
         if (result.error) return result;
 
@@ -408,28 +421,33 @@ class Zoho {
 
         result["related_modules"] = [];
 
-        let relatedModules = await this.getMultiLookupFields(params.module);
+        try {
+            let relatedModules = await this.getMultiLookupFields(params.module);
 
-        for (let relatedModule of relatedModules) {
-            if (this.module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
+            for (let relatedModule of relatedModules) {
+                if (this.module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
 
-            let relatedModuleRParams = params;
-            relatedModuleRParams["module"] = relatedModule.module;
-            relatedModuleRParams["has_subform"] = false;
-            relatedModuleRParams["page"] = 1;
+                let relatedModuleRParams = params;
+                relatedModuleRParams["module"] = relatedModule.module;
+                relatedModuleRParams["has_subform"] = false;
+                relatedModuleRParams["page"] = 1;
 
-            let relatedModuleResult = await this.__getRecordsModifiedAfter(relatedModuleRParams);
-            // console.log(relatedModuleResult);
-            if (!relatedModuleResult.error) {
-                result["related_modules"].push({
-                    "module": relatedModule.module,
-                    "api_name": relatedModule.api_name,
-                    "records": relatedModuleResult.records
-                });
+                let relatedModuleResult = await this.__getRecordsModifiedAfter(relatedModuleRParams);
+                // console.log(relatedModuleResult);
+                if (!relatedModuleResult.error) {
+                    result["related_modules"].push({
+                        "module": relatedModule.module,
+                        "api_name": relatedModule.api_name,
+                        "records": relatedModuleResult.records
+                    });
+                }
             }
-        }
 
-        return result;
+            return result;
+        } catch (e) {
+            if (this.module_options.debug) console.log('ZohoAPI getRecordsModifiedAfter ERROR', JSON.stringify(e));
+            return result;
+        }
     }
 
 
@@ -465,6 +483,7 @@ class Zoho {
             }
             return resultData;
         } catch (error) {
+            console.log('ZohoAPI __getRecordsBatch ERROR', error)
             return resultData;
         }
     }

@@ -63,9 +63,9 @@ const createOauthProperties = async (dir) => {
 	if (!checkPathExists(oauthConfigurationPropertiesPath)) {
 		let oauthConfigurationPropertiesContent = '[zoho]\n';
 		oauthConfigurationPropertiesContent += 'crm.iamurl=accounts.zoho.com\n';
-		oauthConfigurationPropertiesContent += `crm.clientid=${process.env.crm_clientid}\n`;
-		oauthConfigurationPropertiesContent += `crm.clientsecret=${process.env.crm_clientsecret}\n`;
-		oauthConfigurationPropertiesContent += `crm.redirecturl=${process.env.crm_redirecturl}\n`;
+		oauthConfigurationPropertiesContent += `crm.clientid=${process.env.CRM_CLIENT_ID}\n`;
+		oauthConfigurationPropertiesContent += `crm.clientsecret=${process.env.CRM_CLIENT_SECRET}\n`;
+		oauthConfigurationPropertiesContent += `crm.redirecturl=${process.env.CRM_REDIRECT_URL}\n`;
 
 		fs.writeFile(
 			oauthConfigurationPropertiesPath,

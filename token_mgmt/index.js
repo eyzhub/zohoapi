@@ -7,6 +7,12 @@ exports.expiryInterval = expiryInterval;
  * Save token to s3. This function is called by zoho with the token object.
  */
 exports.saveOAuthTokens = async (tokenObj) => {
+	let validKeys = ["access_token", "expires_in", "refresh_token"];
+	for (let validKey of validKeys) {
+		if (!tokenObj[validKey]) {
+			throw new Error(`saveOAuthTokens: invalid tokenObject received for client ${process.env.CRM_CLIENT_ID} tokenObj ${JSON.stringify(tokenObj)}`);
+		}
+	}
 
 	try {
 		await tokens.setTokens(tokenObj);
@@ -23,16 +29,26 @@ exports.saveOAuthTokens = async (tokenObj) => {
  * This function is called by zoho with the token object.
  */
 exports.updateOAuthTokens = async (tokenObj) => {
-
+	/*
+	Updates dont have refresh_token. So, we take the one stored in s3 and update the zoho token object with it.
+	And further check if the token object has all the keys and their values are not null
+	*/
 	if (!tokenObj.refresh_token) {
 		let tokenBody = await tokens.getTokens();
 		let token = JSON.parse(tokenBody.Body.toString());
-		tokenObj.refresh_token = token.refresh_token;
+		let oldRefreshToken = token["refresh_token"];
+		tokenObj["refresh_token"] = oldRefreshToken;
+	}
+
+	let validUpdateKeys = ["access_token", "expires_in", "refresh_token"];
+	for (let validKey of validUpdateKeys) {
+		if (!tokenObj[validKey]) {
+			throw new Error(`updateOAuthTokens: invalid tokenObject received for client ${process.env.CRM_CLIENT_ID} tokenObj ${JSON.stringify(tokenObj)}`);
+		}
 	}
 
 	try {
-		await tokens.setTokens(tokenObj);
-		//console.log("updated to");
+		await tokens.setTokens(tokenObj);		
 		return tokenObj;
 	} catch (err) {
 		console.log("problem writing tokens");

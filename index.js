@@ -7,7 +7,7 @@ const snappy = require('snappy');
 const dotenv = require("dotenv");
 dotenv.config();
 
-
+// 10mins
 const tokenGTimeDiff = 600000;
 
 
@@ -411,6 +411,12 @@ class Zoho {
             return { error: true };
         }
 
+        /*
+        getClient always checks if expirytime is within 10mins.
+        If so regenerates a token. Better to do before concurrent calls start.
+        */
+        await this.getClient(true);
+
         let modifiedAfter = params.modified_after;
 
         if (!modifiedAfter) return { error: true, records: null };
@@ -588,6 +594,12 @@ class Zoho {
         if (!params.module) {
             return { error: true };
         }
+
+        /*
+        getClient always checks if expirytime is within 10mins.
+        If so regenerates a token. Better to do before concurrent calls start.
+        */
+        await this.getClient(true);
 
         // await this.getMultiLookupFields(params.module);
 

@@ -1,6 +1,6 @@
 {
   "name": "zohoapi",
-  "version": "2.0.0",
+  "version": "1.7.2",
   "description": "Zoho Utility functions like s3 based token management, module level operations ",
   "main": "index.js",
   "scripts": {

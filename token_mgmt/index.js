@@ -4,13 +4,16 @@ const expiryInterval = 3600;
 exports.expiryInterval = expiryInterval;
 
 const verifyToken = (tokenObj) => {
-	// if (
-	// 	Object.prototype.hasOwnProperty.call(tokenObj, "access_token") &&
-	// 	Object.prototype.hasOwnProperty.call(tokenObj, "expires_in") &&
-	// 	Object.prototype.hasOwnProperty.call(tokenObj, "refresh_token")
-	// ) {
-	// 	return true;
-	// }
+	console.log("verifying token", tokenObj);
+	/*
+	if (
+		Object.prototype.hasOwnProperty.call(tokenObj, "access_token") &&
+		Object.prototype.hasOwnProperty.call(tokenObj, "expires_in") &&
+		Object.prototype.hasOwnProperty.call(tokenObj, "refresh_token")
+	) {
+		return true;
+	}
+	*/
 
 	if (tokenObj.hasOwnProperty("access_token") && tokenObj.hasOwnProperty("expires_in") && tokenObj.hasOwnProperty("refresh_token")) {
 		return true;
@@ -26,6 +29,7 @@ exports.saveOAuthTokens = async (tokenObj) => {
 	
 	try {
 		if (verifyToken(tokenObj)) {
+			console.log("token from zoho is valid", tokenObj);
 			await tokens.setTokens(tokenObj);
 			return tokenObj;
 		} else {
@@ -48,6 +52,7 @@ exports.updateOAuthTokens = async (tokenObj) => {
 
 	try {
 		if (verifyToken(tokenObj)) {
+			console.log("token from zoho is valid", tokenObj);
 			await tokens.setTokens(tokenObj);		
 			return tokenObj;
 		} else {

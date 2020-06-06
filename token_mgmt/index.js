@@ -3,17 +3,42 @@ var tokens = require("./s3_tokens");
 const expiryInterval = 3600;
 exports.expiryInterval = expiryInterval;
 
+const printToken = (tokenObj) => {
+	// console.log('->printToken', tokenObj)
+	return JSON.stringify(Object.fromEntries(Object.entries(tokenObj).map(v => {
+		v[1] = `${v[1]}`.slice(0,16)
+		return v
+	})))
+}
+
+
+const verifyToken = (tokenObj) => {
+	console.log('ZohoAPI verifyToken', printToken(tokenObj) );
+
+	if (tokenObj.hasOwnProperty("access_token") && 
+		tokenObj.hasOwnProperty("expires_in") && 
+		tokenObj.hasOwnProperty("refresh_token")) return true;
+
+	return false;
+};
+
 /**
  * Save token to s3. This function is called by zoho with the token object.
  */
 exports.saveOAuthTokens = async (tokenObj) => {
-
+	console.log('ZohoAPI saveOAuthTokens', printToken(tokenObj) );
+	
 	try {
-		await tokens.setTokens(tokenObj);
-		return tokenObj;
+		if (verifyToken(tokenObj)) {
+			console.log('ZohoAPI saveOAuthTokens valid', printToken(tokenObj) );
+			await tokens.setTokens(tokenObj);
+			return tokenObj;
+		} else {
+			console.log('ZohoAPI saveOAuthTokens invalid', printToken(tokenObj) );
+			return {};
+		}		
 	} catch (err) {
-		console.log("problem writing tokens");
-		console.log(err);
+		console.log('ZohoAPI saveOAuthTokens error', err );
 		return {};
 	}
 };
@@ -23,20 +48,19 @@ exports.saveOAuthTokens = async (tokenObj) => {
  * This function is called by zoho with the token object.
  */
 exports.updateOAuthTokens = async (tokenObj) => {
-
-	if (!tokenObj.refresh_token) {
-		let tokenBody = await tokens.getTokens();
-		let token = JSON.parse(tokenBody.Body.toString());
-		tokenObj.refresh_token = token.refresh_token;
-	}
+	console.log('ZohoAPI updateOAuthTokens', printToken(tokenObj) );
 
 	try {
-		await tokens.setTokens(tokenObj);
-		//console.log("updated to");
-		return tokenObj;
+		if (verifyToken(tokenObj)) {
+			console.log('ZohoAPI updateOAuthTokens valid', printToken(tokenObj) );
+			await tokens.setTokens(tokenObj);		
+			return tokenObj;
+		} else {
+			console.log('ZohoAPI updateOAuthTokens invalid', printToken(tokenObj) );
+			return {};
+		}
 	} catch (err) {
-		console.log("problem writing tokens");
-		console.log(err);
+		console.log('ZohoAPI updateOAuthTokens error', err );
 		return {};
 	}
 };
@@ -44,13 +68,22 @@ exports.updateOAuthTokens = async (tokenObj) => {
 /**
  * Fetch the token. This function is called by Zoho.
  */
-exports.getOAuthTokens = async (userIdentifier) => {
-	let tokenBody = await tokens.getTokens();
-	let token = JSON.parse(tokenBody.Body.toString());
+exports.getOAuthTokens = (userIdentifier) => {
+	return new Promise(async(resolve, reject) => {
+		/* too verbose */
+		// console.log('ZohoAPI getOAuthTokens userIdentifier', userIdentifier);
+		
+		let tokenBody = await tokens.getTokens();
+		let tokenObj = JSON.parse(tokenBody.Body.toString());
+		
+		if (tokenObj.hasOwnProperty("access_token") && 
+			tokenObj.hasOwnProperty("expires_in") && 
+			tokenObj.hasOwnProperty("refresh_token")) return resolve(tokenObj);
+		else {
+			console.log('ZohoAPI getOAuthTokens S3 invalid', printToken(tokenObj) );
+			return reject({error: 'invalid token'})
+		}
 
-	//console.log(`token will expire at ${token.expires_in}`);
-
-	return new Promise(function(resolve, reject) {
-		resolve(token);
+		
 	});
 };

@@ -4,11 +4,11 @@ const expiryInterval = 3600;
 exports.expiryInterval = expiryInterval;
 
 const printToken = (tokenObj) => {
-	// console.log('->printToken', tokenObj)
-	return JSON.stringify(Object.fromEntries(Object.entries(tokenObj).map(v => {
-		v[1] = `${v[1]}`.slice(0,16)
-		return v
-	})))
+    let formatted = {};
+    Object.keys(tokenObj).map(v => {
+        formatted[v] = `${tokenObj[v]}`.slice(0, 15)
+    });
+    return JSON.stringify(formatted);
 }
 
 

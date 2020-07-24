@@ -14,7 +14,7 @@ const tokenGTimeDiff = 600000;
 /* 
     Array.prototype.flat() function that is no available in older versions of Node.
 */
-function flatten(input, depth=1) {
+function flatten(input, depth = 1) {
     if (!input.length) return input;
 
     let stack = [];
@@ -72,10 +72,10 @@ async function __getFromZoho(url) {
 
 function gcnow() {
     try {
-      if (global.gc) {global.gc();}
+        if (global.gc) { global.gc(); }
     } catch (e) {
-      console.warn('### No GC hook! Start your program as `node --expose-gc file.js`###');
-      // process.exit();
+        console.warn('### No GC hook! Start your program as `node --expose-gc file.js`###');
+        // process.exit();
     }
 }
 
@@ -111,7 +111,7 @@ class Zoho {
 
         let tokenObj = await s3Tokens.getOAuthTokens();
         let expirytime = tokenObj.expires_in;
-        
+
         let refreshToken = tokenObj.refresh_token;
         let ts = Math.round((new Date()).getTime());
 
@@ -212,10 +212,10 @@ class Zoho {
 
         if (!subformCondition) {
             try {
-                let cache_key = input.module+input.params.page
+                let cache_key = input.module + input.params.page
 
                 /* cache available, return data from memory */
-                if (this.module_options.cache && this.module_options.cache.hasOwnProperty( cache_key )) {
+                if (this.module_options.cache && this.module_options.cache.hasOwnProperty(cache_key)) {
                     response = this.module_options.cache[cache_key];
                     if (this.module_options.debug) console.log('ZohoAPI getRecords | CACHED loaded', cache_key, response.statusCode, (response.body) ? response.body.data.length : '');
                     if (this.module_options.compress) {
@@ -844,7 +844,7 @@ class Zoho {
      * @returns {Object} response.data Array of responses for each record: contains status ('success' when record is updated)
      */
     async updateRecords(module, data) {
-       if (this.module_options.debug) console.log('ZohoAPI updateRecords', module, data.length);
+        if (this.module_options.debug) console.log('ZohoAPI updateRecords', module, data.length);
 
         let client = await this.getClient();
 
@@ -867,9 +867,9 @@ class Zoho {
 
         try {
             let results = [];
-            while (allPromises.length){
+            while (allPromises.length) {
                 if (this.module_options.debug) console.log('ZohoAPI updateRecords put', allPromises.length, this.module_options.records_batch_size);
-                results.push( await Promise.all(allPromises.splice(0, this.module_options.records_batch_size)) );
+                results.push(await Promise.all(allPromises.splice(0, this.module_options.records_batch_size)));
             }
 
             results = flatten(results);
@@ -881,7 +881,7 @@ class Zoho {
                     let resultBody = JSON.parse(result.body);
                     return resultBody.data ? resultBody.data : result;
                 }
-                return result;                
+                return result;
             });
 
             return { data: flatten(parsedResult) };
@@ -913,6 +913,44 @@ class Zoho {
             .catch(function (err) {
                 return err;
             });
+    }
+
+
+    /**
+     * Fetch records using coql query string.
+     * @param {String} query - COQL query string
+     * @returns {Object} response.
+     */
+    async coql(query) {
+
+        await this.getClient(true);
+
+        let tokenObj = await s3Tokens.getOAuthTokens();
+        let accessToken = tokenObj.access_token;
+
+        let url = "https://www.zohoapis.com/crm/v2/coql";
+        let jsonBody = {
+            "select_query": query
+        };
+
+        let options = {
+            method: 'post',
+            body: jsonBody,
+            json: true,
+            url: url,
+            headers: {
+                Authorization: `Zoho-oauthtoken  ${accessToken}`
+            }
+        };
+
+        try {
+            let response = await requestPromise(options);
+            if (!response.data) return { success: false, code: response.code };
+            let data = response.data;
+            return { success: true, details: data };
+        } catch (error) {
+            return { success: false, error: console.error() };
+        }
     }
 }
 

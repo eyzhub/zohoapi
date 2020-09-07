@@ -5,6 +5,7 @@ const request = require('request');
 const snappy = require('snappy');
 
 const dotenv = require("dotenv");
+const { url } = require("inspector");
 dotenv.config();
 
 // 10mins
@@ -390,6 +391,55 @@ class Zoho {
         return { error: false, records: resultData, count: resultData.length };
     }
 
+    async __getRelatedRecordsByIds(ids, href) {
+        let data = [];
+
+        let tokenObj = await s3Tokens.getOAuthTokens();
+        let accessToken = tokenObj.access_token;        
+
+        let batchSize = 5;
+
+        for (let i = 0; i < Math.floor(ids.length/batchSize) + 1; i++) {
+            let allPromises = [];
+            
+            for (let id_ of ids.slice(i*batchSize, (i+1) * batchSize)) {
+                let url = `https://www.zohoapis.com/crm/v2/${href.replace("{ENTITYID}", id_)}`;
+                
+                let options = {
+                    method: 'get',
+                    url: url,
+                    headers: {
+                        Authorization: `Zoho-oauthtoken  ${accessToken}`
+                    }
+                };
+
+                allPromises.push(requestPromise(options));
+
+            }
+
+            try {
+                let responses = await Promise.all(allPromises);
+    
+                for (let response of responses) {
+                    if (!response.length) {
+                        continue;
+                    }                    
+
+                    let result = JSON.parse(response);
+                    if (result && result.data && result.data.length) {
+                        data.push(...result.data);
+                    }
+                }                
+            } catch (error) {
+                console.log('ZohoAPI __getRelatedRecordsByIds ERROR', error);
+            }
+        }
+
+        console.log('ZohoAPI __getRelatedRecordsByIds Total items', data.length);    
+
+        return data;
+    }
+
     /**
      * Fetch records of a module modified on or after a given timestamp.
      * @param {Object} params
@@ -438,29 +488,28 @@ class Zoho {
 
         result["related_modules"] = [];
 
+        let modifiedIds = [];
+
+        for (let mRcrd of result.records) {
+            modifiedIds.push(mRcrd.id);
+        }
+
         try {
             let relatedModules = await this.getMultiLookupFields(params.module);
+            // console.log(relatedModules);
 
             for (let relatedModule of relatedModules) {
-                if (this.module_options.debug) console.log(`Fetching related module ${relatedModule.module}`);
+                let relatedModuleRecords = await this.__getRelatedRecordsByIds(modifiedIds, relatedModule.href);
+                
+                result["related_modules"].push({
+                    "module": relatedModule.module,
+                    "api_name": relatedModule.api_name,
+                    "records": relatedModuleRecords
+                });
 
-                let relatedModuleRParams = params;
-                relatedModuleRParams["module"] = relatedModule.module;
-                relatedModuleRParams["has_subform"] = false;
-                relatedModuleRParams["page"] = 1;
-
-                let relatedModuleResult = await this.__getRecordsModifiedAfter(relatedModuleRParams);
-                // console.log(relatedModuleResult);
-                if (!relatedModuleResult.error) {
-                    result["related_modules"].push({
-                        "module": relatedModule.module,
-                        "api_name": relatedModule.api_name,
-                        "records": relatedModuleResult.records
-                    });
-                }
             }
 
-            return result;
+            return result;            
         } catch (e) {
             if (this.module_options.debug) console.log('ZohoAPI getRecordsModifiedAfter ERROR', JSON.stringify(e));
             return result;

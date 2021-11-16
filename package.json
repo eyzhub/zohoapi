@@ -12,7 +12,7 @@
     "url": "git+https://github.com/eyzhub/zohoapi.git"
   },
   "dependencies": {
-    "aws-sdk": "^2.503.0",
+    "aws-sdk": "^2.814.0",
     "dotenv": "^8.0.0",
     "snappy": "^6.3.4",
     "zcrmsdk": "git+https://github.com/dseeker/zcrm-nodejs-sdk.git"

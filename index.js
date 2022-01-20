@@ -397,7 +397,7 @@ class Zoho {
         let tokenObj = await s3Tokens.getOAuthTokens();
         let accessToken = tokenObj.access_token;        
 
-        let batchSize = 5;
+        let batchSize = 50;
 
         for (let i = 0; i < Math.floor(ids.length/batchSize) + 1; i++) {
             let allPromises = [];

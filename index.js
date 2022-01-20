@@ -404,6 +404,7 @@ class Zoho {
             
             for (let id_ of ids.slice(i*batchSize, (i+1) * batchSize)) {
                 let url = `https://www.zohoapis.com/crm/v2/${href.replace("{ENTITYID}", id_)}`;
+                console.log(url);
                 
                 let options = {
                     method: 'get',
@@ -499,6 +500,7 @@ class Zoho {
             // console.log(relatedModules);
 
             for (let relatedModule of relatedModules) {
+                console.log(relatedModule.href)
                 let relatedModuleRecords = await this.__getRelatedRecordsByIds(modifiedIds, relatedModule.href);
                 
                 result["related_modules"].push({
@@ -516,6 +518,51 @@ class Zoho {
         }
     }
 
+
+    async getRecordsDeletedAfter(params) {
+        let client = await this.getClient();
+
+        let page = 1;
+        let per_page = params.per_page ? params.per_page : 10;
+        let sort_by = params.sort_by ? params.sort_by : "Modified_Time";
+        let sort_order = params.sort_order ? params.sort_order : "desc";
+
+        let hasMore = true;
+        let resultData = [];
+
+        while (hasMore) {
+            let tempParams = { page: page, per_page: per_page, sort_by: sort_by, sort_order: sort_order };
+            Object.assign(params, tempParams);
+
+            params["params"] = tempParams
+
+            try {
+                let response = await client.API.MODULES.getAllDeletedRecords(params);
+
+                console.log(params);
+
+                if (!response.body) {
+                    hasMore = false;
+                    return resultData;
+                }
+
+                let bodyObj = JSON.parse(response.body);
+                let data = bodyObj.data;
+
+                for (let datum of data) {
+                    resultData.push(datum.id);
+                }
+
+                page++;
+                hasMore = data.length > 0;
+            } catch (e) {
+                console.error(e);
+                hasMore = false;
+            }
+        }
+        return resultData;
+
+    }
 
     async __getRecordsBatch(params, startPage = 1) {
         let allPromises = [];

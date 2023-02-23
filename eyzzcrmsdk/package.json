@@ -1,0 +1,48 @@
+{
+  "_from": "git+https://github.com/dseeker/zcrm-nodejs-sdk.git",
+  "_id": "zcrmsdk@0.0.22",
+  "_inBundle": false,
+  "_integrity": "",
+  "_location": "/zohoapi/zcrmsdk",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "git",
+    "raw": "zcrmsdk@git+https://github.com/dseeker/zcrm-nodejs-sdk.git",
+    "name": "zcrmsdk",
+    "escapedName": "zcrmsdk",
+    "rawSpec": "git+https://github.com/dseeker/zcrm-nodejs-sdk.git",
+    "saveSpec": "git+https://github.com/dseeker/zcrm-nodejs-sdk.git",
+    "fetchSpec": "https://github.com/dseeker/zcrm-nodejs-sdk.git",
+    "gitCommittish": null
+  },
+  "_requiredBy": [
+    "/zohoapi"
+  ],
+  "_resolved": "git+https://github.com/dseeker/zcrm-nodejs-sdk.git#5e58370364c64d8dcf30341c949cebcbddc15524",
+  "_spec": "zcrmsdk@git+https://github.com/dseeker/zcrm-nodejs-sdk.git",
+  "_where": "/Users/phanisaripalli/eyzmedia/zohoapi",
+  "author": {
+    "name": "Zoho CRM API Team",
+    "url": "support@zohocrm.com"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "mysql": "^2.18.1",
+    "properties-reader": "0.0.16",
+    "querystring": "^0.2.0",
+    "request": "^2.88.2"
+  },
+  "deprecated": false,
+  "description": "Node SDK for Zoho CRM",
+  "keywords": [
+    "Node",
+    "Zoho",
+    "CRM",
+    "OAuth2",
+    "API"
+  ],
+  "main": "lib/js/ZCRMRestClient",
+  "name": "zcrmsdk",
+  "version": "0.0.22"
+}

@@ -1,6 +1,6 @@
 {
-  "name": "zohoapi",
-  "version": "1.9.0",
+  "name": "@eyzmedia/zohoapi",
+  "version": "1.9.7",
   "description": "Zoho Utility functions like s3 based token management, module level operations ",
   "main": "index.js",
   "scripts": {
@@ -14,8 +14,9 @@
   "dependencies": {
     "aws-sdk": "^2.503.0",
     "dotenv": "^8.0.0",
+    "mysql": "^2.18.1",
     "snappy": "^6.3.4",
-    "zcrmsdk": "git+https://github.com/dseeker/zcrm-nodejs-sdk.git"
+    "zcrmsdk": "file:eyzzcrmsdk"
   },
   "disabled_dependencies": {
     "zcrmsdk": "0.0.20"

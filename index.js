@@ -152,7 +152,11 @@ class Zoho {
                 else {
                     toFetchSubform = true;
                     Object.keys(params.where_subform).forEach(function (key) {
-                        toFetchSubform = toFetchSubform && (item[key] == params.where_subform[key]);
+                        if (Array.isArray(params.where_subform[key])) {
+                            toFetchSubform = toFetchSubform && (params["where_subform"][key].includes(item[key]));
+                        } else {
+                            toFetchSubform = toFetchSubform && (item[key] == params["where_subform"][key]);
+                        }
                     });
                 }
 

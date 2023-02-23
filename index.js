@@ -3,6 +3,7 @@ var zcrmsdk = require("zcrmsdk");
 const s3Tokens = require("./token_mgmt");
 const request = require('request');
 const snappy = require('snappy');
+const path = require("path");
 
 const dotenv = require("dotenv");
 dotenv.config();
@@ -11,7 +12,7 @@ dotenv.config();
 const tokenGTimeDiff = 600000;
 
 
-/* 
+/*
     Array.prototype.flat() function that is no available in older versions of Node.
 */
 function flatten(input, depth = 1) {
@@ -103,10 +104,18 @@ class Zoho {
     }
 
     async getClient(generate = false) {
+        let tokenMgmtPath = process.cwd() + "/node_modules/@eyzmedia/zohoapi/token_mgmt/index.js";
+        if (process.env.DYNO) {
+            tokenMgmtPath = '/'+path.join('app','node_modules','@eyzmedia/zohoapi',"token_mgmt", "index.js");
+        }
+
+        console.log("path", tokenMgmtPath);
+
         let zohoConfig = {
             'client_id': process.env.CRM_CLIENT_ID,
             'client_secret': process.env.CRM_CLIENT_SECRET,
             'redirect_url': process.env.CRM_REDIRECT_URL,
+            'tokenmanagement': tokenMgmtPath
         };
 
         let tokenObj = await s3Tokens.getOAuthTokens();
@@ -229,16 +238,21 @@ class Zoho {
                 }
                 /* no cache available, fetch data from zoho */
                 if (!response) {
-                    response = await client.API.MODULES.get(input);
-                    if (response.hasOwnProperty('body') && (typeof response.body === 'string' || response.body instanceof String)) response.body = JSON.parse(response.body);
-                    if (this.module_options.cache) {
-                        this.module_options.cache[cache_key] = response
-                        if (this.module_options.debug) console.log('ZohoAPI getRecords', cache_key, response.statusCode);
-                        if (this.module_options.compress) {
-                            if (this.module_options.debug) console.log('ZohoAPI getRecords Compress');
-                            this.module_options.cache[cache_key] = snappy.compressSync(JSON.stringify(this.module_options.cache[cache_key]))
+                    try {
+                        response = await client.API.MODULES.get(input);
+                        if (response.hasOwnProperty('body') && (typeof response.body === 'string' || response.body instanceof String)) response.body = JSON.parse(response.body);
+                        if (this.module_options.cache) {
+                            this.module_options.cache[cache_key] = response
+                            if (this.module_options.debug) console.log('ZohoAPI getRecords', cache_key, response.statusCode);
+                            if (this.module_options.compress) {
+                                if (this.module_options.debug) console.log('ZohoAPI getRecords Compress');
+                                this.module_options.cache[cache_key] = snappy.compressSync(JSON.stringify(this.module_options.cache[cache_key]))
+                            }
                         }
+                    } catch (e) {
+                        console.log(e)
                     }
+
                 }
 
                 /* invalid data */
@@ -749,15 +763,15 @@ class Zoho {
         return new Promise((resolve, reject) => {
             intervalId = setInterval(() => {
                 state()
-                    .then((data) => {
-                        // console.log(data);
-                        if (!["ADDED", "COMPLETED", "IN PROGRESS", "QUEUED"].includes(data)) {
-                            reject(false);
-                        } else if (data === 'COMPLETED') {
-                            clearInterval(intervalId);
-                            resolve(true);
-                        }
-                    });
+                .then((data) => {
+                    // console.log(data);
+                    if (!["ADDED", "COMPLETED", "IN PROGRESS", "QUEUED"].includes(data)) {
+                        reject(false);
+                    } else if (data === 'COMPLETED') {
+                        clearInterval(intervalId);
+                        resolve(true);
+                    }
+                });
             }, 10000);
         });
     }
@@ -829,14 +843,14 @@ class Zoho {
 
         let client = await this.getClient();
         return client.API.MODULES.put(input)
-            .then(function (response) {
-                if (response.body) return JSON.parse(response.body);
-                return {};
-            })
-            .catch(function (err) {
-                console.log(err)
-                return { error: err };
-            });
+        .then(function (response) {
+            if (response.body) return JSON.parse(response.body);
+            return {};
+        })
+        .catch(function (err) {
+            console.log(err)
+            return { error: err };
+        });
     }
 
     /**
@@ -911,12 +925,12 @@ class Zoho {
 
         let client = await this.getClient();
         return client.API.MODULES.post(input)
-            .then(function (response) {
-                return response;
-            })
-            .catch(function (err) {
-                return err;
-            });
+        .then(function (response) {
+            return response;
+        })
+        .catch(function (err) {
+            return err;
+        });
     }
 
 
